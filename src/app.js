@@ -7,6 +7,8 @@ const cookieParser = require('cookie-parser')
 const indexRoutes = require('./routes/index.routes')
 const authRoutes = require('./routes/auth.routes')
 const homeRoutes = require('./routes/home.routes')
+const postRoutes = require('./routes/post.routes')
+
 const { attachUser } = require('./middlewares/authMiddleware')
 
 const app = express()
@@ -27,6 +29,7 @@ app.use((req, res, next) => {
 app.use(indexRoutes)
 app.use('/auth', authRoutes)
 app.use('/home', homeRoutes)
+app.use('/posts', postRoutes)
 
 sequelize.sync().then(() => {
   app.listen(process.env.PORT, () => {

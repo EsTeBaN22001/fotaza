@@ -1,0 +1,35 @@
+extends ../layouts/app
+
+block content
+  .row.justify-content-center
+    .col-md-6
+
+      .card.shadow
+        .card-body
+
+          h4.mb-3 Crear Post
+
+          form(method="POST" action="/posts" enctype="multipart/form-data")
+
+            .mb-3
+              label.form-label Título
+              input.form-control(
+                type="text"
+                name="title"
+                value=old.title
+              )
+
+            .mb-3
+              label.form-label Descripción
+              textarea.form-control(name="description")= old.description
+
+            .mb-3
+              label.form-label Imágenes
+              input.form-control(
+                type="file"
+                name="images"
+                multiple
+                accept="image/*"
+              )
+
+            button.btn.btn-primary.w-100(type="submit") Publicar

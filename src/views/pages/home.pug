@@ -1,17 +1,44 @@
 extends ../layouts/app
 
 block content
-  h2.mb-4 Bienvenido #{user.username}
-
   .row
-    .col-md-6
-      .card.shadow-sm
-        .card-body
-          h5.card-title Tu feed
-          p.card-text Próximamente verás publicaciones aquí.
+    each post in posts
+      .col-md-4.mb-4
+        .card.shadow-sm
 
-    .col-md-6
-      .card.shadow-sm
-        .card-body
-          h5.card-title Acciones rápidas
-          a.btn.btn-primary(href="/posts/create") Crear Post
+          // ===== IMÁGENES =====
+          if post.images.length == 1
+            img.card-img-top(src=post.images[0].url)
+
+          else if post.images.length > 1
+            - const carouselId = 'carousel-' + post.id
+
+            .carousel.slide(id=carouselId data-bs-ride="carousel")
+
+              .carousel-inner
+                each img, index in post.images
+                  .carousel-item(class=index === 0 ? 'active' : '')
+                    img.d-block.w-100(
+                      src=img.url
+                      style="height: 300px; object-fit: cover;"
+                    )
+
+              button.carousel-control-prev(
+                type="button"
+                data-bs-target='#' + carouselId
+                data-bs-slide="prev"
+              )
+                span.carousel-control-prev-icon
+
+              button.carousel-control-next(
+                type="button"
+                data-bs-target='#' + carouselId
+                data-bs-slide="next"
+              )
+                span.carousel-control-next-icon
+
+          // ===== BODY =====
+          .card-body
+            h5.card-title= post.title
+            p.card-text= post.description
+            small.text-muted= post.User && post.User.username ? post.User.username : 'Anónimo'

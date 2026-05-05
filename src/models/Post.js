@@ -4,8 +4,17 @@ const sequelize = require('../config/db')
 const Post = sequelize.define(
   'Post',
   {
-    title: DataTypes.STRING,
-    description: DataTypes.TEXT,
+    title: {
+      type: DataTypes.STRING,
+      allowNull: false
+    },
+    description: {
+      type: DataTypes.TEXT
+    },
+    status: {
+      type: DataTypes.ENUM('pending', 'approved', 'rejected'),
+      defaultValue: 'pending'
+    },
     commentsEnabled: DataTypes.BOOLEAN
   },
   {

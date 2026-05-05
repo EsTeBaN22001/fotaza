@@ -1,6 +1,6 @@
 const User = require('./User')
 const Post = require('./Post')
-const Image = require('./Image')
+const PostImage = require('./PostImage')
 const Comment = require('./Comment')
 const Rating = require('./Rating')
 const Tag = require('./Tag')
@@ -11,18 +11,20 @@ const Collection = require('./Collection')
 const Interest = require('./Interest')
 
 // Relaciones
-User.hasMany(Post)
-Post.belongsTo(User)
+User.hasMany(Post, { foreignKey: 'UserId', as: 'posts' }) // opcional
+Post.belongsTo(User, { foreignKey: 'UserId', as: 'User' }) // ✅ as: 'User' (PascalCase)
 
-Post.hasMany(Image)
-Image.belongsTo(Post)
+// 🖼️ Post ↔ PostImage
+Post.hasMany(PostImage, { foreignKey: 'PostId', as: 'images' }) // ✅ as: 'images'
+PostImage.belongsTo(Post, { foreignKey: 'PostId' })
 
 User.hasMany(Comment)
 Comment.belongsTo(User)
+Comment.belongsTo(Post)
 Post.hasMany(Comment)
 
-Image.hasMany(Rating)
-Rating.belongsTo(Image)
+PostImage.hasMany(Rating)
+Rating.belongsTo(PostImage)
 User.hasMany(Rating)
 
 Post.belongsToMany(Tag, { through: 'post_tags' })
@@ -46,7 +48,7 @@ Collection.belongsTo(User)
 module.exports = {
   User,
   Post,
-  Image,
+  PostImage,
   Comment,
   Rating,
   Tag,
