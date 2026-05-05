@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
-    "db:init": "mysql -u root -p < database/init.sql"
+    "db:init": "node database/seed.js"
   },
   "keywords": [],
   "author": "",
