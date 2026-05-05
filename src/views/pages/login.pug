@@ -4,6 +4,12 @@ html
     title Login
   body
     h1 Login
+
+    if errors
+      ul
+        each err in errors
+          li= err.message
+
     form(method="POST")
       input(type="email" name="email" placeholder="Email")
       input(type="password" name="password" placeholder="Password")
