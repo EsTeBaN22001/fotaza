@@ -1,0 +1,17 @@
+extends ../layouts/app
+
+block content
+  h2.mb-4 Bienvenido #{user.username}
+
+  .row
+    .col-md-6
+      .card.shadow-sm
+        .card-body
+          h5.card-title Tu feed
+          p.card-text Próximamente verás publicaciones aquí.
+
+    .col-md-6
+      .card.shadow-sm
+        .card-body
+          h5.card-title Acciones rápidas
+          a.btn.btn-primary(href="/posts/create") Crear Post

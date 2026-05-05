@@ -8,9 +8,18 @@ block content
         .card.shadow
           .card-body
 
-            h3.text-center.mb-4 Login
+            h3.text-center.mb-4 Registro
 
-            form(method="POST" action="/auth/login")
+            form(method="POST" action="/register")
+
+              .mb-3
+                label.form-label Usuario
+                input.form-control(
+                  type="text"
+                  name="username"
+                  placeholder="Usuario"
+                  value=old.username
+                )
 
               .mb-3
                 label.form-label Email
@@ -18,7 +27,7 @@ block content
                   type="email"
                   name="email"
                   placeholder="Email"
-                  value=old && old.email
+                  value=old.email
                 )
 
               .mb-3
@@ -29,4 +38,4 @@ block content
                   placeholder="Password"
                 )
 
-              button.btn.btn-primary.w-100(type="submit") Login
+              button.btn.btn-primary.w-100(type="submit") Registrarse

@@ -6,7 +6,7 @@ exports.authRequired = async (req, res, next) => {
     const token = req.cookies.token
 
     if (!token) {
-      return res.redirect('/login')
+      return res.redirect('/auth/login')
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
@@ -14,18 +14,18 @@ exports.authRequired = async (req, res, next) => {
     const user = await User.findByPk(decoded.id)
 
     if (!user || !user.active) {
-      return res.redirect('/login')
+      return res.redirect('/auth/login')
     }
 
     req.user = user
 
     next()
   } catch (err) {
-    return res.redirect('/login')
+    return res.redirect('/auth/login')
   }
 }
 
-exports.optionalAuth = async (req, res, next) => {
+exports.attachUser = async (req, res, next) => {
   try {
     const token = req.cookies.token
 
@@ -48,7 +48,7 @@ exports.optionalAuth = async (req, res, next) => {
 
 exports.requireRole = role => {
   return (req, res, next) => {
-    if (!req.user) return res.redirect('/login')
+    if (!req.user) return res.redirect('/auth/login')
 
     if (req.user.role !== role) {
       return res.status(403).send('No autorizado')
