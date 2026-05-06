@@ -74,3 +74,54 @@ exports.createPost = async req => {
     throw err
   }
 }
+
+exports.updatePost = async req => {
+  const { title, description } = req.body
+  const postId = req.params.id
+  const userId = req.user.id
+
+  const post = await Post.findOne({ where: { id: postId, UserId: userId } })
+  if (!post) throw new Error('No tienes permiso o la publicación no existe')
+
+  if (!title || !description) throw new Error('Título y descripción son obligatorios')
+
+  await post.update({ title, description })
+  // ✅ Opcional: aquí puedes agregar lógica para subir nuevas imágenes o reemplazar existentes
+  return post
+}
+
+exports.deletePost = async req => {
+  const postId = req.params.id
+  const userId = req.user.id
+
+  const post = await Post.findOne({
+    where: { id: postId, UserId: userId },
+    include: [{ model: PostImage, as: 'images' }]
+  })
+
+  if (!post) throw new Error('Publicación no encontrada o sin permisos')
+
+  const transaction = await Post.sequelize.transaction()
+  try {
+    const uploadDir = path.join(__dirname, '../public/uploads')
+
+    // 🗑️ Eliminar archivos del disco
+    for (const img of post.images) {
+      const fileName = path.basename(img.url)
+      const filePath = path.join(uploadDir, fileName)
+      if (await fs.stat(filePath).catch(() => false)) {
+        await fs.unlink(filePath)
+      }
+    }
+
+    // 🗑️ Eliminar registros en BD (cascada o manual)
+    await PostImage.destroy({ where: { PostId: postId }, transaction })
+    await post.destroy({ transaction })
+
+    await transaction.commit()
+  } catch (err) {
+    await transaction.rollback()
+    console.error('❌ Error eliminando post:', err)
+    throw err
+  }
+}

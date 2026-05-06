@@ -1,0 +1,67 @@
+extends ../layouts/app
+
+block content
+  .container.mt-5
+    .row.justify-content-center
+      .col-md-8.col-lg-6
+        // 🎨 Card de error con estilo Bootstrap
+        .card.shadow-lg.border-0
+          .card-header.bg-danger.text-white.py-3
+            h4.mb-0.d-flex.align-items-center.gap-2
+              i.bi.bi-exclamation-triangle-fill(fs-5)
+              | Error #{status || 500}
+
+          .card-body.p-4.text-center
+            // 🖼️ Icono/ilustración según tipo de error
+            if message.includes('no encontrada') || status === 404
+              .display-1.mb-3 🔍
+              p.lead.fw-bold.mb-4 La página que buscas no existe
+            else if message.includes('interno') || status === 500
+              .display-1.mb-3 ⚙️
+              p.lead.fw-bold.mb-4 Algo salió mal en el servidor
+            else if message.includes('permiso') || status === 403
+              .display-1.mb-3 🔒
+              p.lead.fw-bold.mb-4 No tienes acceso a esta sección
+            else
+              .display-1.mb-3 ⚠️
+              p.lead.fw-bold.mb-4= message
+
+            // 📋 Mostrar detalles del error (solo en desarrollo)
+            if errors && errors.length && process.env.NODE_ENV !== 'production'
+              .alert.alert-warning.text-start.mb-4
+                small.fw-bold Detalles técnicos:
+                ul.mb-0.mt-2
+                  each err in errors
+                    li= err.message
+
+            // 🔗 Botones de navegación
+            .d-flex.flex-column.flex-sm-row.justify-content-center.gap-2.mt-4
+              a.btn.btn-primary(href='/home')
+                i.bi.bi-house-door.me-1
+                | Ir al Inicio
+              
+              if user
+                a.btn.btn-outline-secondary(href='/profile/my-posts')
+                  i.bi.bi-person-circle.me-1
+                  | Mi Perfil
+              
+              button.btn.btn-outline-danger(type='button', onclick='history.back()')
+                i.bi.bi-arrow-left.me-1
+                | Volver
+
+          .card-footer.bg-light.text-center.py-2
+            small.text-muted
+              | ¿Necesitas ayuda? 
+              a(href='mailto:soporte@fotaza.com') Contáctanos
+
+    // 💡 Tips útiles para errores comunes
+    if status === 404
+      .row.mt-5.justify-content-center
+        .col-md-6
+          .alert.alert-info
+            h6.fw-bold.mb-2 ¿Qué puedes hacer?
+            ul.mb-0.ps-3
+              li Verifica que la URL esté bien escrita
+              li Usa el buscador para encontrar contenido
+              li Explora las publicaciones recientes en 
+                a(href='/home') Inicio

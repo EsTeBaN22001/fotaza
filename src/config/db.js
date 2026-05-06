@@ -7,6 +7,7 @@ const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, proces
   dialect: 'mysql',
   // Muestra queries solo en desarrollo
   // logging: process.env.NODE_ENV === 'development' ? console.log : false,
+  logging: false,
   // Alinea fechas con Argentina/Latam (ajustá si es necesario)
   timezone: process.env.DB_TIMEZONE || '-03:00',
   // Pool optimizado para concurrencia moderada/alta

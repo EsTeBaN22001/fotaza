@@ -1,0 +1,32 @@
+extends ../layouts/app
+
+block content
+  .container.mt-4
+    h2.mb-4 ✏️ Editar Publicación
+
+    if errors.length > 0
+      .alert.alert-danger
+        ul.mb-0
+          each error in errors
+            li= error.message
+
+    form(method='POST', action=`/profile/edit/${post.id}`)
+      
+      .mb-3
+        label(for='title') Título
+        input.form-control(type='text', id='title', name='title', value=old.title || post.title, required)
+
+      .mb-3
+        label(for='description') Descripción
+        textarea.form-control(id='description', name='description', rows='4', required)= old.description || post.description
+
+      .mb-3
+        label Imágenes actuales
+        .row.g-2
+          each img in post.images
+            .col-4
+              img.img-thumbnail(src=img.url style="height: 100px; object-fit: cover; width: 100%;")
+
+      .d-flex.gap-2
+        button.btn.btn-primary(type='submit') 💾 Guardar cambios
+        a.btn.btn-secondary(href='/profile/my-posts') ❌ Cancelar

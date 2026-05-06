@@ -1,44 +1,96 @@
 extends ../layouts/app
 
 block content
-  .row
-    each post in posts
-      .col-md-4.mb-4
-        .card.shadow-sm
+  // ✅ ESTADO VACÍO: Cuando no hay publicaciones
+  if !posts || posts.length === 0
+    .container.mt-5.text-center
+      .display-4.mb-3 📷
+      h2.fw-bold.mb-3 Aún no hay publicaciones
+      p.lead.text-muted.mb-4
+        | Sé el primero en compartir tu trabajo con la comunidad.
+      
+      .d-flex.justify-content-center.gap-3
+        if user
+          a.btn.btn-primary.btn-lg(href='/posts/create')
+            i.bi.bi-camera-fill.me-2
+            | Crear mi primera publicación
+        else
+          a.btn.btn-outline-primary.btn-lg(href='/auth/register')
+            i.bi.bi-person-plus-fill.me-2
+            | Registrarme para publicar
+          a.btn.btn-link.btn-lg(href='/auth/login')
+            | Ya tengo cuenta
 
-          // ===== IMÁGENES =====
-          if post.images.length == 1
-            img.card-img-top(src=post.images[0].url)
+      .row.mt-5.justify-content-center
+        .col-md-8
+          .alert.alert-info.text-start
+            h6.fw-bold.mb-2 ¿Qué puedo publicar en Fotaza?
+            ul.mb-0.ps-3
+              li 🏞️ Paisajes y naturaleza
+              li 🏙️ Fotografía urbana y arquitectura
+              li 👤 Retratos y moda
+              li 🎨 Arte digital y edición creativa
+            small.d-block.mt-2.text-muted
+              | Recuerda: todas las imágenes deben ser de tu autoría.
 
-          else if post.images.length > 1
-            - const carouselId = 'carousel-' + post.id
+  else
+    // ✅ LISTADO NORMAL: Cuando hay publicaciones
+    .row
+      each post in posts
+        .col-md-4.mb-4
+          .card.shadow-sm.h-100
 
-            .carousel.slide(id=carouselId data-bs-ride="carousel")
+            // ===== IMÁGENES =====
+            if post.images.length == 1
+              a(href=`/posts/${post.id}`)
+                img.card-img-top(
+                  src=post.images[0].url
+                  alt=post.title
+                  style="height: 250px; object-fit: cover;"
+                  loading="lazy"
+                )
 
-              .carousel-inner
-                each img, index in post.images
-                  .carousel-item(class=index === 0 ? 'active' : '')
-                    img.d-block.w-100(
-                      src=img.url
-                      style="height: 300px; object-fit: cover;"
-                    )
+            else if post.images.length > 1
+              - const carouselId = 'carousel-' + post.id
 
-              button.carousel-control-prev(
-                type="button"
-                data-bs-target='#' + carouselId
-                data-bs-slide="prev"
-              )
-                span.carousel-control-prev-icon
+              .carousel.slide(id=carouselId data-bs-ride="carousel")
+                .carousel-inner
+                  each img, index in post.images
+                    .carousel-item(class=index === 0 ? 'active' : '')
+                      a(href=`/posts/${post.id}`)
+                        img.d-block.w-100(
+                          src=img.url
+                          alt=post.title
+                          style="height: 250px; object-fit: cover;"
+                          loading="lazy"
+                        )
 
-              button.carousel-control-next(
-                type="button"
-                data-bs-target='#' + carouselId
-                data-bs-slide="next"
-              )
-                span.carousel-control-next-icon
+                button.carousel-control-prev(
+                  type="button"
+                  data-bs-target='#' + carouselId
+                  data-bs-slide="prev"
+                )
+                  span.carousel-control-prev-icon
 
-          // ===== BODY =====
-          .card-body
-            h5.card-title= post.title
-            p.card-text= post.description
-            small.text-muted= post.User && post.User.username ? post.User.username : 'Anónimo'
+                button.carousel-control-next(
+                  type="button"
+                  data-bs-target='#' + carouselId
+                  data-bs-slide="next"
+                )
+                  span.carousel-control-next-icon
+
+            // ===== BODY =====
+            .card-body.d-flex.flex-column
+              h5.card-title
+                a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
+              
+              p.card-text.text-muted.flex-grow-1= post.description.length > 100 ? post.description.substring(0, 100) + '...' : post.description
+              
+              small.text-muted.d-block.mb-2
+                | Por 
+                if post.User && post.User.username
+                  a.text-decoration-none.fw-bold(href=`/profile/${post.User.id}`)= post.User.username
+                else
+                  | Anónimo
+                |  • 
+                span= new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })

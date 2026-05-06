@@ -1,0 +1,34 @@
+extends ../layouts/app
+
+block content
+  .container.mt-4
+    h2.mb-4 📸 Mis Publicaciones
+    p.text-muted Publicaciones totales: #{posts.length}
+
+    if posts.length === 0
+      .alert.alert-info
+        | Aún no has creado publicaciones. 
+        a(href='/posts/create') Crear una ahora
+
+    else
+      .row
+        each post in posts
+          .col-md-4.mb-4
+            .card.h-100.shadow-sm
+              if post.images.length > 0
+                img.card-img-top(src=post.images[0].url style="height: 200px; object-fit: cover;")
+              else
+                .card-img-top.bg-secondary.d-flex.align-items-center.justify-content-center(style="height: 200px;")
+                  span.text-white Sin imagen
+
+              .card-body
+                h5.card-title= post.title
+                p.card-text.text-truncate= post.description
+                small.text-muted= new Date(post.created_at).toLocaleDateString('es-ES')
+
+                .d-flex.justify-content-between.mt-3
+                  a.btn.btn-sm.btn-outline-primary(href=`/profile/edit/${post.id}`) ✏️ Editar
+                  
+                  form(action=`/profile/delete/${post.id}`, method='POST')
+                    button.btn.btn-sm.btn-outline-danger(type='submit', onclick="return confirm('¿Eliminar esta publicación y sus imágenes?')")
+                      | 🗑️ Eliminar
