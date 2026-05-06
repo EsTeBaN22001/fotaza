@@ -1,1 +1,71 @@
-node_modules
+# ==========================================
+# DEPENDENCIAS & PAQUETES
+# ==========================================
+node_modules/
+.pnp
+.pnp.js
+
+# ==========================================
+# VARIABLES DE ENTORNO & SECRETOS
+# ==========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+
+# ==========================================
+# LOGS & RUNTIME
+# ==========================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.pid
+*.pid.lock
+
+# ==========================================
+# EDITORES & IDEs
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ==========================================
+# ARCHIVOS DE SO
+# ==========================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# SUBIDAS DE ARCHIVOS (MULTE R)
+# ==========================================
+public/uploads/
+uploads/
+
+# ==========================================
+# TEMPORALES & BUILD
+# ==========================================
+dist/
+build/
+.cache/
+tmp/
+
+# ==========================================
+# COBERTURA DE TESTS (si usas)
+# ==========================================
+coverage/
+.nyc_output/
+
+# ==========================================
+# IMPORTANTE: CONSIGNA FOTAZA 2
+# ==========================================
+# ✅ NO ignores tu backup SQL principal (ej: backup.sql o init.sql)
+# ✅ Mantén .env.example en el repo
+!.env.example
