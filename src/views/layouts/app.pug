@@ -33,6 +33,12 @@ html
               a.nav-link(href="/home") Inicio
             li.nav-item
               a.nav-link(href="/posts/create") Crear Post
+            // ✅ NUEVO: Feed de usuarios que sigo (solo para autenticados)
+            if user
+              li.nav-item
+                a.nav-link(href="/feed") 
+                  i.bi.bi-rss-fill.me-1(style="font-size: 0.9rem;")
+                  | Mis Seguidos
 
           // derecha (usuario)
           ul.navbar-nav.ms-auto
@@ -46,21 +52,62 @@ html
 
                 ul.dropdown-menu.dropdown-menu-end
                   li
-                    a.dropdown-item(href="/profile/my-posts") Perfil
+                    a.dropdown-item(href=`/profile/${user.username}`) Mi Perfil
+                  li
+                    a.dropdown-item(href="/notifications") 
+                      | Notificaciones
+                      if unreadNotifications && unreadNotifications > 0
+                        span.badge.bg-danger.rounded-pill.ms-1= unreadNotifications
                   li
                     hr.dropdown-divider
                   li
                     a.dropdown-item.text-danger(href="/auth/logout") Cerrar sesión
+            else
+              li.nav-item
+                a.nav-link(href="/auth/login") Iniciar Sesión
+              li.nav-item
+                a.nav-link(href="/auth/register") Registrarse
 
     // 📢 MENSAJES GLOBALES
-    .container.mt-3
-      if success
-        .alert.alert-success.text-center= success
+    //- .container.mt-3
+    //-   if success
+    //-     .alert.alert-success.text-center= success
 
+    //-   if errors && errors.length
+    //-     .alert.alert-danger
+    //-       each err in errors
+    //-         div= err.message
+    .toast-container.position-fixed.top-0.end-0.p-3(style="z-index: 1100")
+      
+      // ✅ Success Toast (string único)
+      if success
+        .toast.toast-success.show(role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000")
+          .toast-header.bg-success.text-white
+            strong.me-auto ✅ Éxito
+            small.now= new Date().toLocaleTimeString('es-AR')
+            button.btn-close.btn-close-white(type="button" data-bs-dismiss="toast")
+          .toast-body= success
+
+      // ✅ Errors Toast (siempre array, incluso si tiene 1 solo elemento)
       if errors && errors.length
-        .alert.alert-danger
-          each err in errors
-            div= err.message
+        .toast.toast-error.show(role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000")
+          .toast-header.bg-danger.text-white
+            strong.me-auto= errors.length === 1 ? '❌ Error' : '❌ Errores'
+            small.now= new Date().toLocaleTimeString('es-AR')
+            button.btn-close.btn-close-white(type="button" data-bs-dismiss="toast")
+          .toast-body
+            each err in errors
+              div.small= err.message || err
+
+      //- // ✅ Toast para notificaciones rápidas (opcional, útil para follow/unfollow)
+      //- if notification
+      //-   .toast-container.position-fixed.top-0.end-0.p-3
+      //-     .toast.show(role="alert" aria-live="assertive" aria-atomic="true")
+      //-       .toast-header
+      //-         strong.me-auto.notif-title= notification.type
+      //-         small= notification.date
+      //-         button.btn-close(type="button" data-bs-dismiss="toast")
+      //-       .toast-body= notification.message
 
     // 📦 CONTENIDO PRINCIPAL
     .container.mt-4
@@ -70,4 +117,27 @@ html
     footer.text-center.text-muted.mt-5.mb-3
       small © 2026 Fotaza
 
+    // Bootstrap JS + Icons (opcional para íconos)
     script(src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js")
+    link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css", integrity="sha384-tViUnnbYAV00FLIhhi3v/dWt3Jxw4gZQcNoSCxCIFNJVCx7/D55/wXsrNIRANwdD", crossorigin="anonymous")
+
+    // ✅ Inicializar Toasts de Bootstrap
+    script.
+      document.addEventListener('DOMContentLoaded', function() {
+        const toastElements = document.querySelectorAll('.toast.show')
+        toastElements.forEach(function(toastEl) {
+          const toast = new bootstrap.Toast(toastEl, {
+            delay: 10000,
+            autohide: true
+          })
+          toast.show()
+        })
+        
+        if (window.history.replaceState) {
+          const url = new URL(window.location)
+          url.searchParams.delete('success')
+          url.searchParams.delete('error')
+          url.searchParams.delete('errors')
+          window.history.replaceState({}, document.title, url)
+        }
+      })

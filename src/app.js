@@ -9,6 +9,7 @@ const authRoutes = require('./routes/auth.routes')
 const homeRoutes = require('./routes/home.routes')
 const postRoutes = require('./routes/post.routes')
 const profileRoutes = require('./routes/profile.routes')
+const feedRoutes = require('./routes/feed.routes')
 
 const { attachUser } = require('./middlewares/authMiddleware')
 
@@ -30,11 +31,6 @@ app.use(express.static(path.join(__dirname, 'public')))
 
 // 🔐 Auth Middleware + Locals globales para vistas
 app.use(attachUser)
-// app.use((req, res, next) => {
-//   // console.log('🔍 DEBUG: req.user =', req.user?.username || 'null') // 👈 Agrega esto temporalmente
-//   res.locals.user = req.user || null
-//   next()
-// })
 
 // 🗺️ Rutas (¡SIEMPRE al final!)
 app.use(indexRoutes)
@@ -42,6 +38,7 @@ app.use('/auth', authRoutes)
 app.use('/home', homeRoutes)
 app.use('/posts', postRoutes)
 app.use('/profile', profileRoutes)
+app.use('/feed', feedRoutes)
 
 // 🚀 Iniciar servidor después de sincronizar BD
 sequelize

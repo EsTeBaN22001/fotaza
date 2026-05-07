@@ -3,7 +3,7 @@ const { Post, PostImage, User } = require('../models')
 exports.getHome = async (req, res) => {
   try {
     const posts = await Post.findAll({
-      // where: { status: 'approved' },
+      where: { status: 'approved' },
       include: [
         {
           model: PostImage,
@@ -20,7 +20,6 @@ exports.getHome = async (req, res) => {
 
     res.render('pages/home', { posts })
   } catch (err) {
-    console.error('❌ Error en getHome:', err)
     res.status(500).render('pages/error', { message: 'Error cargando el feed' })
   }
 }

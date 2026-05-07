@@ -4,7 +4,7 @@ block content
   .container.mt-4
     h2.mb-4 ✏️ Editar Publicación
 
-    if errors.length > 0
+    if errors && errors.length > 0
       .alert.alert-danger
         ul.mb-0
           each error in errors
@@ -29,4 +29,4 @@ block content
 
       .d-flex.gap-2
         button.btn.btn-primary(type='submit') 💾 Guardar cambios
-        a.btn.btn-secondary(href='/profile/my-posts') ❌ Cancelar
+        a.btn.btn-secondary(href=`/profile/${username}`) ❌ Cancelar

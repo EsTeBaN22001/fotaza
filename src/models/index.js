@@ -11,11 +11,11 @@ const Collection = require('./Collection')
 const Interest = require('./Interest')
 
 // Relaciones
-User.hasMany(Post, { foreignKey: 'UserId', as: 'posts' }) // opcional
-Post.belongsTo(User, { foreignKey: 'UserId', as: 'User' }) // ✅ as: 'User' (PascalCase)
+User.hasMany(Post, { foreignKey: 'UserId', as: 'posts' })
+Post.belongsTo(User, { foreignKey: 'UserId', as: 'User' })
 
 // 🖼️ Post ↔ PostImage
-Post.hasMany(PostImage, { foreignKey: 'PostId', as: 'images' }) // ✅ as: 'images'
+Post.hasMany(PostImage, { foreignKey: 'PostId', as: 'images' })
 PostImage.belongsTo(Post, { foreignKey: 'PostId' })
 
 User.hasMany(Comment)
@@ -33,13 +33,15 @@ Tag.belongsToMany(Post, { through: 'post_tags' })
 User.belongsToMany(User, {
   as: 'Followers',
   through: Follow,
-  foreignKey: 'following_id'
+  foreignKey: 'following_id', // Columna que apunta al usuario que RECIBE el follow
+  otherKey: 'follower_id' // Columna que apunta al usuario que HACE el follow
 })
 
 User.belongsToMany(User, {
   as: 'Following',
   through: Follow,
-  foreignKey: 'follower_id'
+  foreignKey: 'follower_id', // Columna que apunta al usuario que HACE el follow
+  otherKey: 'following_id' // Columna que apunta al usuario que RECIBE el follow
 })
 
 User.hasMany(Notification)

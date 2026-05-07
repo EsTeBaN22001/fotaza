@@ -1,0 +1,26 @@
+extends ../../layouts/app
+
+block content
+  .container.mt-4
+    h3= title
+    .alert.alert-info.mt-2 Aquí verás las publicaciones de los usuarios que sigues.
+    .row.g-3.mt-2
+      each post in posts
+        .col-md-4.col-sm-6
+          .card.h-100
+            if post.cover_image
+              img.card-img-top(src=`/uploads/posts/${post.cover_image}` style="height: 180px; object-fit: cover;")
+            .card-body
+              .d-flex.align-items-center.mb-2
+                // Placeholder para autor
+                .bg-light.rounded-circle.d-flex.align-items-center.justify-content-center.me-2(style="width: 32px; height: 32px;")
+                  i.bi.bi-person.small.text-muted
+                small.fw-bold= post.User.username 
+              h6.card-title= post.title
+              p.card-text.text-truncate.small= post.description || ''
+              a.btn.btn-sm.btn-outline-primary(href=`/post/${post.id}`) Ver publicación
+      if posts.length === 0
+        .col-12.text-center.text-muted.py-4 No hay publicaciones en tu feed aún. Sigue a más usuarios para ver contenido aquí.
+    if pagination && pagination.hasNext
+      .text-center.mt-4
+        a.btn.btn-secondary(href=`?page=${pagination.page + 1}`) Cargar más

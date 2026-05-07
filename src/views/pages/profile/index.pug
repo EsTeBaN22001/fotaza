@@ -1,0 +1,81 @@
+extends ../../layouts/app
+
+block content
+  .container.mt-4
+    .card.shadow-sm
+      .card-body.p-4
+        .row.align-items-center
+          .col-md-2.text-center
+            // Placeholder de avatar con Bootstrap Icons
+            .bg-secondary.rounded-circle.d-flex.align-items-center.justify-content-center.mx-auto.mb-3(style="width: 110px; height: 110px;")
+              i.bi.bi-person.text-white(style="font-size: 3rem;")
+          .col-md-7
+            h2.card-title.mb-1= profileUser.username
+            p.text-muted.mb-2
+              small
+                i.bi.bi-calendar3.me-1
+                | Miembro desde 
+                span= profileUser.created_at ? profileUser.created_at.toLocaleDateString('es-AR') : 'N/A'
+          .col-md-3.text-end
+            if isOwner
+              a.btn.btn-primary(href="/profile/edit") Editar Perfil
+            else if isFollowing
+              form(method="POST" action=`/profile/${profileUser.username}/follow`)
+                button.btn.btn-outline-danger(type="submit") Dejar de seguir
+            else
+              form(method="POST" action=`/profile/${profileUser.username}/follow`)
+                button.btn.btn-primary(type="submit") Seguir
+
+        // Estadísticas
+        .row.mt-4.text-center
+          .col-4
+            a.fw-bold.text-decoration-none.d-inline-flex.align-items-center.gap-2(href=`/profile/${profileUser.username}/followers`)
+              span.badge.bg-primary= followerCount
+              span.text-muted Seguidores
+          .col-4
+            a.fw-bold.text-decoration-none.d-inline-flex.align-items-center.gap-2(href=`/profile/${profileUser.username}/following`)
+              span.badge.bg-success= followingCount
+              span.text-muted Siguiendo
+          .col-4
+            .d-inline-flex.align-items-center.gap-2
+              span.badge.bg-light.text-dark= posts.length
+              span.text-muted Publicaciones
+
+        hr.my-4
+        h5.h6.text-uppercase.text-muted.mb-3 Publicaciones
+        .row.g-3
+          each post in posts
+            .col-md-4.col-sm-6.mb-4
+              .card.h-100.shadow-sm
+                // ✅ Imagen principal (primera de la publicación)
+                if post.images && post.images.length > 0
+                  img.card-img-top(src=post.images[0].url alt="Post" style="height: 200px; object-fit: cover;")
+                else
+                  .card-img-top.bg-secondary.d-flex.align-items-center.justify-content-center(style="height: 200px;")
+                    span.text-white.fw-bold Sin imagen
+
+                .card-body
+                  h6.card-title= post.title
+                  p.card-text.text-truncate.small= post.description || 'Sin descripción'
+                  small.text-muted.d-block.mb-2= new Date(post.created_at).toLocaleDateString('es-AR')
+
+                  .d-flex.justify-content-between.mt-3
+                    // 🔐 VALIDACIÓN: Solo el dueño ve Editar/Eliminar
+                    if isOwner
+                      a.btn.btn-sm.btn-outline-primary(href=`/profile/edit/${post.id}`) ✏️ Editar
+                      
+                      form(action=`/profile/delete/${post.id}`, method='POST', class='d-inline')
+                        button.btn.btn-sm.btn-outline-danger(type='submit', onclick="return confirm('¿Eliminar esta publicación y sus imágenes?')")
+                          | 🗑️ Eliminar
+                    else
+                      // 👁️ Visitantes: Solo pueden ver la publicación
+                      a.btn.btn-sm.btn-outline-secondary(href=`/post/${post.id}`) Ver publicación
+
+          // ✅ Mensaje cuando no hay posts
+          if posts.length === 0
+            .col-12.text-center.text-muted.py-4
+              if isOwner
+                | Aún no has creado publicaciones.
+                a.btn.btn-link.p-0.ms-1(href='/posts/create') Crear una ahora
+              else
+                | Este usuario aún no tiene publicaciones.

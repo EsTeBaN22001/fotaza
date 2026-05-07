@@ -30,21 +30,27 @@ html
             li.nav-item
               a.nav-link(href="/auth/register") Registro
 
-    .container.mt-3
+    .toast-container.position-fixed.top-0.end-0.p-3(style="z-index: 1100")
+      
+      // ✅ Success Toast (string único)
       if success
-        .row.justify-content-center
-          .col-md-6.col-lg-4
-            .alert.alert-success.text-center= success
+        .toast.toast-success.show(role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000")
+          .toast-header.bg-success.text-white
+            strong.me-auto ✅ Éxito
+            small.now= new Date().toLocaleTimeString('es-AR')
+            button.btn-close.btn-close-white(type="button" data-bs-dismiss="toast")
+          .toast-body= success
 
+      // ✅ Errors Toast (siempre array, incluso si tiene 1 solo elemento)
       if errors && errors.length
-        .row.justify-content-center
-          .col-md-6.col-lg-4
-            .card.border-danger.shadow-sm
-              .card-body
-                h6.text-danger.mb-2 Errores:
-                ul.mb-0
-                  each err in errors
-                    li= err.message
+        .toast.toast-error.show(role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000")
+          .toast-header.bg-danger.text-white
+            strong.me-auto= errors.length === 1 ? '❌ Error' : '❌ Errores'
+            small.now= new Date().toLocaleTimeString('es-AR')
+            button.btn-close.btn-close-white(type="button" data-bs-dismiss="toast")
+          .toast-body
+            each err in errors
+              div.small= err.message || err
 
     block content
 

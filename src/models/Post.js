@@ -13,7 +13,7 @@ const Post = sequelize.define(
     },
     status: {
       type: DataTypes.ENUM('pending', 'approved', 'rejected'),
-      defaultValue: 'pending'
+      defaultValue: 'approved'
     },
     commentsEnabled: DataTypes.BOOLEAN
   },

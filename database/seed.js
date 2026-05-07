@@ -27,12 +27,12 @@ async function seed() {
 
   await PostImage.bulkCreate([
     {
-      url: '/uploads/test.jpg',
+      url: '/uploads/test.webp',
       license: 'free',
       PostId: post.id
     },
     {
-      url: '/uploads/test2.jpg',
+      url: '/uploads/test2.webp',
       license: 'free',
       PostId: post.id
     }

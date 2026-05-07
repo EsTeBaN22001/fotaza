@@ -1,0 +1,24 @@
+extends ../../layouts/app
+
+block content
+  .container.mt-4
+    h3= title
+    .row.g-3.mt-2
+      each user in users
+        .col-md-3.col-sm-6
+          .card.h-100
+            .card-body.text-center
+              // ✅ Avatar centrado con flexbox
+              .d-flex.justify-content-center.mb-3
+                .bg-secondary.rounded-circle.d-flex.align-items-center.justify-content-center(style="width: 70px; height: 70px;")
+                  i.bi.bi-person.text-white(style="font-size: 2rem;")
+              
+              h6.card-title.mb-1= user.username
+              a.btn.btn-sm.btn-outline-primary(href=`/profile/${user.username}`) Ver perfil
+      
+      if users.length === 0
+        .col-12.text-center.text-muted.py-4 
+          if type === 'followers'
+            | Aún no tiene seguidores.
+          else
+            | No sigue a nadie todavía.
