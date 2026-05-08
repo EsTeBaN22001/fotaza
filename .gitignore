@@ -47,10 +47,10 @@ desktop.ini
 # SUBIDAS DE ARCHIVOS (MULTER)
 # Ignorar todo en uploads/ excepto las imágenes del seed y .gitkeep
 # ==========================================
-src/public/uploads/*
-!src/public/uploads/seed_*.webp
-!src/public/uploads/.gitkeep
-uploads/
+# src/public/uploads/*
+# !src/public/uploads/seed_*.webp
+# !src/public/uploads/.gitkeep
+# uploads/
 
 # ==========================================
 # TEMPORALES & BUILD
