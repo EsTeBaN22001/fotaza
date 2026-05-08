@@ -89,7 +89,7 @@ block content
               small.text-muted.d-block.mb-2
                 | Por 
                 if post.User && post.User.username
-                  a.text-decoration-none.fw-bold(href=`/profile/${post.User.id}`)= post.User.username
+                  a.text-decoration-none.fw-bold(href=`/profile/${post.User.username}`)= post.User.username
                 else
                   | Anónimo
                 |  • 

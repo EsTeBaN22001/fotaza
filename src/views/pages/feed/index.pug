@@ -18,7 +18,7 @@ block content
                 small.fw-bold= post.User.username 
               h6.card-title= post.title
               p.card-text.text-truncate.small= post.description || ''
-              a.btn.btn-sm.btn-outline-primary(href=`/post/${post.id}`) Ver publicación
+              a.btn.btn-sm.btn-outline-primary(href=`/posts/${post.id}`) Ver publicación
       if posts.length === 0
         .col-12.text-center.text-muted.py-4 No hay publicaciones en tu feed aún. Sigue a más usuarios para ver contenido aquí.
     if pagination && pagination.hasNext

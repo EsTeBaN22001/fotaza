@@ -1,0 +1,194 @@
+extends ../../layouts/app
+
+block content
+  .container.mt-4.mb-5
+
+    //- ===== NAVEGACIÓN =====
+    .mb-3
+      a.text-decoration-none.text-muted(href="/home")
+        i.bi.bi-arrow-left.me-1
+        | Volver al inicio
+
+    .row.justify-content-center
+      .col-lg-8
+
+        //- ===== IMÁGENES =====
+        if post.images && post.images.length > 0
+
+          if post.images.length === 1
+            .rounded-3.overflow-hidden.shadow-sm.mb-4
+              img.w-100(
+                src=post.images[0].url
+                alt=post.title
+                style="max-height: 600px; object-fit: contain; background: #1a1a1a;"
+              )
+
+          else
+            - const carouselId = 'post-carousel-' + post.id
+            .rounded-3.overflow-hidden.shadow-sm.mb-4
+              .carousel.slide(id=carouselId data-bs-ride="carousel")
+                //- Indicadores
+                .carousel-indicators
+                  each img, idx in post.images
+                    button(
+                      type="button"
+                      data-bs-target='#' + carouselId
+                      data-bs-slide-to=idx
+                      class=idx === 0 ? 'active' : ''
+                      aria-label=`Imagen ${idx + 1}`
+                    )
+
+                .carousel-inner
+                  each img, idx in post.images
+                    .carousel-item(class=idx === 0 ? 'active' : '')
+                      img.d-block.w-100(
+                        src=img.url
+                        alt=`${post.title} - Imagen ${idx + 1}`
+                        style="max-height: 600px; object-fit: contain; background: #1a1a1a;"
+                      )
+
+                button.carousel-control-prev(
+                  type="button"
+                  data-bs-target='#' + carouselId
+                  data-bs-slide="prev"
+                )
+                  span.carousel-control-prev-icon
+                  span.visually-hidden Anterior
+
+                button.carousel-control-next(
+                  type="button"
+                  data-bs-target='#' + carouselId
+                  data-bs-slide="next"
+                )
+                  span.carousel-control-next-icon
+                  span.visually-hidden Siguiente
+
+              //- Contador de imágenes
+              .text-center.text-muted.small.mt-2
+                i.bi.bi-images.me-1
+                | #{post.images.length} imagen#{post.images.length > 1 ? 'es' : ''}
+
+        else
+          .rounded-3.overflow-hidden.shadow-sm.mb-4.bg-secondary.d-flex.align-items-center.justify-content-center(style="height: 300px;")
+            .text-center.text-white
+              i.bi.bi-image.d-block(style="font-size: 3rem;")
+              span.mt-2.d-block Sin imágenes
+
+        //- ===== CONTENIDO DEL POST =====
+        .card.shadow-sm.border-0.mb-4
+          .card-body.p-4
+
+            //- Título
+            h1.h3.fw-bold.mb-3= post.title
+
+            //- Autor y fecha
+            .d-flex.align-items-center.mb-4
+              .bg-secondary.rounded-circle.d-flex.align-items-center.justify-content-center.me-3(style="width: 48px; height: 48px; min-width: 48px;")
+                i.bi.bi-person.text-white(style="font-size: 1.2rem;")
+              .flex-grow-1
+                if post.User
+                  a.fw-bold.text-decoration-none(href=`/profile/${post.User.username}`)= post.User.username
+                else
+                  span.fw-bold Anónimo
+                .text-muted.small
+                  i.bi.bi-calendar3.me-1
+                  span= new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })
+                  span.mx-2 •
+                  i.bi.bi-clock.me-1
+                  span= new Date(post.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })
+
+              //- Acciones del dueño
+              if user && post.User && user.id === post.User.id
+                .dropdown
+                  button.btn.btn-sm.btn-outline-secondary.dropdown-toggle(
+                    type="button"
+                    data-bs-toggle="dropdown"
+                  )
+                    i.bi.bi-three-dots
+                  ul.dropdown-menu.dropdown-menu-end
+                    li
+                      a.dropdown-item(href=`/profile/edit/${post.id}`)
+                        i.bi.bi-pencil.me-2
+                        | Editar
+                    li
+                      hr.dropdown-divider
+                    li
+                      form(action=`/profile/delete/${post.id}` method="POST" class="d-inline")
+                        button.dropdown-item.text-danger(type="submit" onclick="return confirm('¿Eliminar esta publicación y sus imágenes?')")
+                          i.bi.bi-trash.me-2
+                          | Eliminar
+
+            //- Descripción
+            if post.description
+              .mb-4
+                p.mb-0(style="white-space: pre-wrap; line-height: 1.7;")= post.description
+
+            //- Estadísticas
+            .d-flex.align-items-center.gap-4.text-muted.border-top.pt-3
+              span
+                i.bi.bi-chat.me-1
+                | #{commentCount} comentario#{commentCount !== 1 ? 's' : ''}
+              if post.images && post.images.length > 0
+                span
+                  i.bi.bi-images.me-1
+                  | #{post.images.length} imagen#{post.images.length > 1 ? 'es' : ''}
+
+        //- ===== SECCIÓN DE COMENTARIOS =====
+        .card.shadow-sm.border-0.mb-4
+          .card-body.p-4
+            h5.fw-bold.mb-4
+              i.bi.bi-chat-dots.me-2
+              | Comentarios (#{commentCount})
+
+            //- Formulario de comentario (solo si está autenticado y comentarios habilitados)
+            if user && post.commentsEnabled
+              form.mb-4(action=`/posts/${post.id}/comments` method="POST")
+                .mb-3
+                  textarea.form-control(
+                    name="content"
+                    rows="3"
+                    placeholder="Escribe un comentario..."
+                    required
+                    maxlength="500"
+                    style="resize: vertical;"
+                  )
+                .text-end
+                  button.btn.btn-primary(type="submit")
+                    i.bi.bi-send.me-1
+                    | Comentar
+
+            else if !user
+              .alert.alert-light.text-center
+                a.text-decoration-none(href="/auth/login") Inicia sesión
+                |  para comentar
+
+            else if !post.commentsEnabled
+              .alert.alert-light.text-center
+                i.bi.bi-lock.me-1
+                | Los comentarios están deshabilitados para esta publicación
+
+            //- Lista de comentarios
+            if comments && comments.length > 0
+              each comment in comments
+                .d-flex.mb-3.pb-3.border-bottom
+                  .bg-light.rounded-circle.d-flex.align-items-center.justify-content-center.me-3(style="width: 40px; height: 40px; min-width: 40px;")
+                    i.bi.bi-person.text-muted
+                  .flex-grow-1
+                    .d-flex.justify-content-between.align-items-start
+                      div
+                        if comment.User
+                          a.fw-bold.text-decoration-none.me-2(href=`/profile/${comment.User.username}`)= comment.User.username
+                        else
+                          span.fw-bold.me-2 Anónimo
+                        small.text-muted= new Date(comment.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+                      //- Borrar propio comentario
+                      if user && comment.User && user.id === comment.User.id
+                        form(action=`/posts/${post.id}/comments/${comment.id}/delete` method="POST" class="d-inline")
+                          button.btn.btn-sm.text-muted.p-0(type="submit" title="Eliminar comentario" onclick="return confirm('¿Eliminar este comentario?')")
+                            i.bi.bi-x-lg
+                    p.mb-0.mt-1(style="white-space: pre-wrap;")= comment.content
+
+            else
+              .text-center.text-muted.py-4
+                i.bi.bi-chat.d-block(style="font-size: 2rem;")
+                p.mt-2 Aún no hay comentarios. ¡Sé el primero!

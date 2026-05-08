@@ -1,10 +1,110 @@
-const { Post, PostImage, User, Tag } = require('../models')
+const { Post, PostImage, User, Tag, Comment } = require('../models')
 const postService = require('../services/postService')
 
 exports.showCreate = (req, res) => {
   res.render('pages/createPost', {
     old: {}
   })
+}
+
+// 📄 Ver publicación individual
+exports.showPost = async (req, res) => {
+  try {
+    const post = await Post.findByPk(req.params.id, {
+      include: [
+        { model: PostImage, as: 'images' },
+        { model: User, as: 'User', attributes: ['id', 'username'] }
+      ]
+    })
+
+    if (!post) {
+      return res.status(404).render('pages/error', {
+        message: 'Publicación no encontrada',
+        errors: []
+      })
+    }
+
+    const comments = await Comment.findAll({
+      where: { PostId: post.id },
+      include: [{ model: User, attributes: ['id', 'username'] }],
+      order: [['created_at', 'DESC']]
+    })
+
+    const commentCount = comments.length
+
+    // Toast messages from query params
+    const errors = req.query.error ? [{ message: decodeURIComponent(req.query.error) }] : []
+    const success = req.query.success ? decodeURIComponent(req.query.success) : null
+
+    res.render('pages/post/show', {
+      post,
+      comments,
+      commentCount,
+      errors,
+      success
+    })
+  } catch (err) {
+    console.error('❌ Error cargando publicación:', err)
+    res.status(500).render('pages/error', {
+      message: 'Error al cargar la publicación',
+      errors: [{ message: err.message }]
+    })
+  }
+}
+
+// 💬 Crear comentario
+exports.createComment = async (req, res) => {
+  try {
+    const { content } = req.body
+    const postId = req.params.id
+
+    if (!content || content.trim().length === 0) {
+      return res.redirect(`/posts/${postId}?error=El+comentario+no+puede+estar+vacío`)
+    }
+
+    const post = await Post.findByPk(postId)
+    if (!post) {
+      return res.redirect('/home?error=Publicación+no+encontrada')
+    }
+
+    if (!post.commentsEnabled) {
+      return res.redirect(`/posts/${postId}?error=Los+comentarios+están+deshabilitados`)
+    }
+
+    await Comment.create({
+      content: content.trim(),
+      PostId: postId,
+      UserId: req.user.id
+    })
+
+    return res.redirect(`/posts/${postId}?success=Comentario+publicado`)
+  } catch (err) {
+    console.error('❌ Error creando comentario:', err)
+    return res.redirect(`/posts/${req.params.id}?error=Error+al+publicar+comentario`)
+  }
+}
+
+// 🗑️ Eliminar comentario
+exports.deleteComment = async (req, res) => {
+  try {
+    const { id, commentId } = req.params
+
+    const comment = await Comment.findByPk(commentId)
+    if (!comment) {
+      return res.redirect(`/posts/${id}?error=Comentario+no+encontrado`)
+    }
+
+    // Solo el dueño del comentario puede eliminarlo
+    if (comment.UserId !== req.user.id) {
+      return res.redirect(`/posts/${id}?error=No+tienes+permiso+para+eliminar+este+comentario`)
+    }
+
+    await comment.destroy()
+    return res.redirect(`/posts/${id}?success=Comentario+eliminado`)
+  } catch (err) {
+    console.error('❌ Error eliminando comentario:', err)
+    return res.redirect(`/posts/${req.params.id}?error=Error+al+eliminar+comentario`)
+  }
 }
 
 exports.createPost = async (req, res) => {
