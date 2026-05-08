@@ -44,9 +44,11 @@ Thumbs.db
 desktop.ini
 
 # ==========================================
-# SUBIDAS DE ARCHIVOS (MULTE R)
+# SUBIDAS DE ARCHIVOS (MULTER)
+# Ignorar todo en uploads/ excepto las imágenes del seed
 # ==========================================
-public/uploads/
+src/public/uploads/*
+!src/public/uploads/seed_*.webp
 uploads/
 
 # ==========================================
