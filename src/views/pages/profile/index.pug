@@ -47,9 +47,28 @@ block content
           each post in posts
             .col-md-4.col-sm-6.mb-4
               .card.h-100.shadow-sm
-                // ✅ Imagen principal (primera de la publicación)
+                // ✅ Galería de imágenes (Slide si hay más de una)
                 if post.images && post.images.length > 0
-                  img.card-img-top(src=post.images[0].url alt="Post" style="height: 200px; object-fit: cover;")
+                  if post.images.length === 1
+                    a(href=`/posts/${post.id}`)
+                      img.card-img-top(src=post.images[0].url alt="Post" style="height: 200px; object-fit: cover;")
+                  else
+                    - const carouselId = 'carousel-profile-' + post.id
+                    .carousel.slide(id=carouselId data-bs-ride="carousel")
+                      .carousel-inner
+                        each img, index in post.images
+                          .carousel-item(class=index === 0 ? 'active' : '')
+                            a(href=`/posts/${post.id}`)
+                              img.d-block.w-100(
+                                src=img.url
+                                alt="Post"
+                                style="height: 200px; object-fit: cover;"
+                                loading="lazy"
+                              )
+                      button.carousel-control-prev(type="button" data-bs-target='#' + carouselId data-bs-slide="prev")
+                        span.carousel-control-prev-icon(aria-hidden="true")
+                      button.carousel-control-next(type="button" data-bs-target='#' + carouselId data-bs-slide="next")
+                        span.carousel-control-next-icon(aria-hidden="true")
                 else
                   a(href=`/posts/${post.id}`)
                     img.card-img-top(

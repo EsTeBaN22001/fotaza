@@ -34,7 +34,10 @@ services:
       - APP_URL=http://localhost:3000
     depends_on:
       - db
+    command: npm run dev
     volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
       - ./src/public/uploads:/usr/src/app/src/public/uploads
     networks:
       - fotaza_network
