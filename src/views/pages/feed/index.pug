@@ -2,25 +2,62 @@ extends ../../layouts/app
 
 block content
   .container.mt-4
-    h3= title
-    .alert.alert-info.mt-2 Aquí verás las publicaciones de los usuarios que sigues.
-    .row.g-3.mt-2
-      each post in posts
-        .col-md-4.col-sm-6
-          .card.h-100
-            if post.cover_image
-              img.card-img-top(src=`/uploads/posts/${post.cover_image}` style="height: 180px; object-fit: cover;")
-            .card-body
-              .d-flex.align-items-center.mb-2
-                // Placeholder para autor
-                .bg-light.rounded-circle.d-flex.align-items-center.justify-content-center.me-2(style="width: 32px; height: 32px;")
-                  i.bi.bi-person.small.text-muted
-                small.fw-bold= post.User.username 
-              h6.card-title= post.title
-              p.card-text.text-truncate.small= post.description || ''
-              a.btn.btn-sm.btn-outline-primary(href=`/posts/${post.id}`) Ver publicación
+    h3.fw-bold.mb-3
+      i.bi.bi-rss-fill.me-2
+      = title
+
+    if !posts || posts.length === 0
+      .text-center.py-5
+        .display-4.mb-3 📭
+        h5.fw-bold Aún no hay publicaciones en tu feed
+        p.text-muted.mb-4 Sigue a más usuarios para ver su contenido aquí.
+        a.btn.btn-outline-primary(href="/home")
+          i.bi.bi-house.me-1
+          | Explorar publicaciones
+
+    else
+      .row.g-3
+        each post in posts
+          .col-md-4.col-sm-6
+            .card.h-100.shadow-sm
+              //- ===== IMAGEN =====
+              if post.images && post.images.length > 0
+                a(href=`/posts/${post.id}`)
+                  img.card-img-top(
+                    src=post.images[0].url
+                    alt=post.title
+                    style="height: 220px; object-fit: cover;"
+                    loading="lazy"
+                  )
+              else
+                a.text-decoration-none(href=`/posts/${post.id}`)
+                  .card-img-top.bg-secondary.d-flex.align-items-center.justify-content-center(style="height: 220px;")
+                    i.bi.bi-image.text-white(style="font-size: 2rem;")
+
+              .card-body.d-flex.flex-column
+                //- Autor
+                .d-flex.align-items-center.mb-2
+                  .bg-light.rounded-circle.d-flex.align-items-center.justify-content-center.me-2(style="width: 32px; height: 32px; min-width: 32px;")
+                    i.bi.bi-person.small.text-muted
+                  if post.User
+                    a.fw-bold.small.text-decoration-none(href=`/profile/${post.User.username}`)= post.User.username
+                  else
+                    small.fw-bold Anónimo
+
+                //- Título y descripción
+                h6.card-title
+                  a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
+                p.card-text.text-truncate.small.text-muted.flex-grow-1= post.description || ''
+
+                //- Footer
+                .d-flex.justify-content-between.align-items-center.mt-2
+                  small.text-muted= new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+                  a.btn.btn-sm.btn-outline-primary(href=`/posts/${post.id}`) Ver
+
+      //- Paginación
       if posts.length === 0
-        .col-12.text-center.text-muted.py-4 No hay publicaciones en tu feed aún. Sigue a más usuarios para ver contenido aquí.
-    if pagination && pagination.hasNext
-      .text-center.mt-4
-        a.btn.btn-secondary(href=`?page=${pagination.page + 1}`) Cargar más
+      else if pagination && pagination.hasNext
+        .text-center.mt-4
+          a.btn.btn-secondary(href=`?page=${pagination.page + 1}`)
+            | Cargar más
+            i.bi.bi-arrow-down.ms-1

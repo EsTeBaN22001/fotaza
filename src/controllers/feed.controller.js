@@ -1,4 +1,4 @@
-const { Post, User, Follow } = require('../models')
+const { Post, PostImage, User, Follow } = require('../models')
 const { Op } = require('sequelize')
 
 exports.getFollowedFeed = async (req, res) => {
@@ -13,16 +13,22 @@ exports.getFollowedFeed = async (req, res) => {
 
     let posts = []
     if (followingIds.length > 0) {
-      // 🔹 Consulta para el feed de seguidos
-      const posts = await Post.findAll({
+      // ✅ FIX: Reasignar la variable (sin redeclarar con const)
+      posts = await Post.findAll({
         where: {
-          UserId: { [Op.in]: followingIds } // ✅ Usa 'UserId', no 'author_id'
+          UserId: { [Op.in]: followingIds },
+          status: 'approved'
         },
         include: [
           {
             model: User,
-            as: 'User', // ✅ Alias definido en tu asociación (con U mayúscula)
+            as: 'User',
             attributes: ['id', 'username']
+          },
+          {
+            model: PostImage,
+            as: 'images',
+            attributes: ['id', 'url']
           }
         ],
         order: [['created_at', 'DESC']],
@@ -31,26 +37,24 @@ exports.getFollowedFeed = async (req, res) => {
       })
     }
 
-    // ✅ IMPORTANTE: Construir objeto pagination SIEMPRE
     const pagination = {
       page,
       limit,
-      hasNext: posts.length === limit // Si trajo el límite completo, hay más páginas
+      hasNext: posts.length === limit
     }
 
     res.render('pages/feed/index', {
-      // 👈 Verifica la ruta correcta de la vista
       title: 'Publicaciones de usuarios que sigo',
       posts,
-      pagination // 👈 ¡Asegúrate de incluirlo!
+      pagination
     })
   } catch (err) {
-    console.error(err)
+    console.error('❌ Error cargando feed:', err)
     res.render('pages/feed/index', {
+      title: 'Publicaciones de usuarios que sigo',
       posts: [],
-      user: req.user,
-      errors: [{ message: 'No se pudieron cargar tus publicaciones' }],
-      success: null
+      pagination: { page: 1, limit: 12, hasNext: false },
+      errors: [{ message: 'No se pudieron cargar las publicaciones' }]
     })
   }
 }
