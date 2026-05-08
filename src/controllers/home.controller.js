@@ -1,4 +1,4 @@
-const { Post, PostImage, User } = require('../models')
+const { Post, PostImage, User, Tag } = require('../models')
 
 exports.getHome = async (req, res) => {
   try {
@@ -11,7 +11,11 @@ exports.getHome = async (req, res) => {
         },
         {
           model: User,
-          as: 'User' // ✅ ¡ESTO FALTABA! Debe coincidir con el 'as' en la asociación
+          as: 'User'
+        },
+        {
+          model: Tag,
+          through: { attributes: [] }
         }
       ],
       order: [['created_at', 'DESC']],

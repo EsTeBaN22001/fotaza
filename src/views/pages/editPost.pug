@@ -10,7 +10,7 @@ block content
           each error in errors
             li= error.message
 
-    form(method='POST', action=`/profile/edit/${post.id}`)
+    form(method='POST', action=`/profile/edit/${post.id}`, enctype='multipart/form-data')
       
       .mb-3
         label(for='title') Título
@@ -21,11 +21,61 @@ block content
         textarea.form-control(id='description', name='description', rows='4', required)= old.description || post.description
 
       .mb-3
-        label Imágenes actuales
+        label.form-label Imágenes actuales (Selecciona las que quieras eliminar)
         .row.g-2
-          each img in post.images
-            .col-4
-              img.img-thumbnail(src=img.url style="height: 100px; object-fit: cover; width: 100%;")
+          if post.images && post.images.length > 0
+            each img in post.images
+              .col-4.position-relative
+                img.img-thumbnail(src=img.url style="height: 100px; object-fit: cover; width: 100%;")
+                .form-check.mt-1
+                  input.form-check-input(
+                    type="checkbox"
+                    name="removedImages"
+                    value=img.id
+                    id=`remove-img-${img.id}`
+                    checked=(old.removedImages && (Array.isArray(old.removedImages) ? old.removedImages.includes(img.id.toString()) : old.removedImages === img.id.toString()))
+                  )
+                  label.form-check-label.text-danger(for=`remove-img-${img.id}`) Eliminar
+          else
+            p.text-muted No hay imágenes actuales.
+
+      .mb-3
+        label.form-label Agregar nuevas imágenes (Máximo 5 en total)
+        input.form-control(
+          type="file"
+          name="newImages"
+          multiple
+          accept="image/*"
+        )
+
+      if tags && tags.length > 0
+        .mb-3
+          label.form-label Etiquetas (Tags)
+          .d-flex.flex-wrap.gap-2
+            each tag in tags
+              - const isCheckedByOld = old.tags && (Array.isArray(old.tags) ? old.tags.includes(tag.id.toString()) : old.tags === tag.id.toString())
+              - const isCheckedByPost = !old.tags && post.Tags && post.Tags.some(pt => pt.id === tag.id)
+              .form-check
+                input.form-check-input(
+                  type="checkbox"
+                  name="tags"
+                  value=tag.id
+                  id=`tag-${tag.id}`
+                  checked=(isCheckedByOld || isCheckedByPost)
+                )
+                label.form-check-label(for=`tag-${tag.id}`)= tag.name
+
+      .mb-4
+        .form-check.form-switch
+          - const isCommentsEnabledOld = old.commentsEnabled !== undefined ? old.commentsEnabled === 'on' : null
+          - const isCommentsEnabledFinal = isCommentsEnabledOld !== null ? isCommentsEnabledOld : post.commentsEnabled
+          input.form-check-input(
+            type="checkbox"
+            name="commentsEnabled"
+            id="commentsEnabled"
+            checked=isCommentsEnabledFinal
+          )
+          label.form-check-label(for="commentsEnabled") Habilitar comentarios en esta publicación
 
       .d-flex.gap-2
         button.btn.btn-primary(type='submit') 💾 Guardar cambios

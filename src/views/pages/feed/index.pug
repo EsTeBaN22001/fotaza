@@ -30,9 +30,12 @@ block content
                     loading="lazy"
                   )
               else
-                a.text-decoration-none(href=`/posts/${post.id}`)
-                  .card-img-top.bg-secondary.d-flex.align-items-center.justify-content-center(style="height: 220px;")
-                    i.bi.bi-image.text-white(style="font-size: 2rem;")
+                a(href=`/posts/${post.id}`)
+                  img.card-img-top(
+                    src="/placeholder.svg"
+                    alt="Sin imagen"
+                    style="height: 220px; object-fit: cover;"
+                  )
 
               .card-body.d-flex.flex-column
                 //- Autor
@@ -47,7 +50,15 @@ block content
                 //- Título y descripción
                 h6.card-title
                   a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
-                p.card-text.text-truncate.small.text-muted.flex-grow-1= post.description || ''
+                p.card-text.text-truncate.small.text-muted.mb-2= post.description || ''
+                
+                //- Tags
+                if post.Tags && post.Tags.length > 0
+                  .d-flex.flex-wrap.gap-1.mb-2
+                    each tag in post.Tags
+                      span.badge.rounded-pill.bg-light.text-primary.border.small= tag.name
+                
+                .flex-grow-1
 
                 //- Footer
                 .d-flex.justify-content-between.align-items-center.mt-2

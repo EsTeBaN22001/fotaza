@@ -1,4 +1,4 @@
-const { Post, PostImage, User, Follow } = require('../models')
+const { Post, PostImage, User, Follow, Tag } = require('../models')
 
 exports.getMyPosts = async (req, res) => {
   try {
@@ -8,7 +8,8 @@ exports.getMyPosts = async (req, res) => {
       where: { UserId: userId },
       include: [
         { model: PostImage, as: 'images', attributes: ['id', 'url'] },
-        { model: User, as: 'User', attributes: ['id', 'username'] }
+        { model: User, as: 'User', attributes: ['id', 'username'] },
+        { model: Tag, through: { attributes: [] } }
       ],
       order: [['created_at', 'DESC']]
     })
@@ -61,7 +62,10 @@ exports.getProfile = async (req, res) => {
 
     const posts = await Post.findAll({
       where: { UserId: profileUser.id },
-      include: [{ model: PostImage, as: 'images', attributes: ['url', 'id'] }],
+      include: [
+        { model: PostImage, as: 'images', attributes: ['url', 'id'] },
+        { model: Tag, through: { attributes: [] } }
+      ],
       order: [['created_at', 'DESC']],
       limit: 12
     })

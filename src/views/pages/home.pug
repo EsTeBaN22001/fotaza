@@ -79,12 +79,28 @@ block content
                 )
                   span.carousel-control-next-icon
 
+            else
+              a(href=`/posts/${post.id}`)
+                img.card-img-top(
+                  src="/placeholder.svg"
+                  alt="Sin imagen"
+                  style="height: 250px; object-fit: cover;"
+                )
+
             // ===== BODY =====
             .card-body.d-flex.flex-column
               h5.card-title
                 a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
               
-              p.card-text.text-muted.flex-grow-1= post.description.length > 100 ? post.description.substring(0, 100) + '...' : post.description
+              p.card-text.text-muted.mb-2= post.description.length > 100 ? post.description.substring(0, 100) + '...' : post.description
+
+              //- Tags
+              if post.Tags && post.Tags.length > 0
+                .d-flex.flex-wrap.gap-1.mb-3
+                  each tag in post.Tags
+                    span.badge.rounded-pill.bg-light.text-primary.border.small= tag.name
+              
+              .flex-grow-1
               
               small.text-muted.d-block.mb-2
                 | Por 

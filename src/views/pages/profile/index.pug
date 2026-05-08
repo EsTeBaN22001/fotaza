@@ -51,12 +51,22 @@ block content
                 if post.images && post.images.length > 0
                   img.card-img-top(src=post.images[0].url alt="Post" style="height: 200px; object-fit: cover;")
                 else
-                  .card-img-top.bg-secondary.d-flex.align-items-center.justify-content-center(style="height: 200px;")
-                    span.text-white.fw-bold Sin imagen
+                  a(href=`/posts/${post.id}`)
+                    img.card-img-top(
+                      src="/placeholder.svg" 
+                      alt="Sin imagen" 
+                      style="height: 200px; object-fit: cover;"
+                    )
 
                 .card-body
                   h6.card-title= post.title
-                  p.card-text.text-truncate.small= post.description || 'Sin descripción'
+                  p.card-text.text-truncate.small.mb-1= post.description || 'Sin descripción'
+                  
+                  //- Tags
+                  if post.Tags && post.Tags.length > 0
+                    .d-flex.flex-wrap.gap-1.mb-2
+                      each tag in post.Tags
+                        span.badge.rounded-pill.bg-light.text-primary.border.x-small(style="font-size: 0.7rem;")= tag.name
                   small.text-muted.d-block.mb-2= new Date(post.created_at).toLocaleDateString('es-AR')
 
                   .d-flex.justify-content-between.mt-3

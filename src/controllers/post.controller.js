@@ -1,10 +1,16 @@
 const { Post, PostImage, User, Tag, Comment } = require('../models')
 const postService = require('../services/postService')
 
-exports.showCreate = (req, res) => {
-  res.render('pages/createPost', {
-    old: {}
-  })
+exports.showCreate = async (req, res) => {
+  try {
+    const tags = await Tag.findAll()
+    res.render('pages/createPost', {
+      old: {},
+      tags
+    })
+  } catch (err) {
+    res.redirect('/home')
+  }
 }
 
 // 📄 Ver publicación individual
@@ -13,7 +19,8 @@ exports.showPost = async (req, res) => {
     const post = await Post.findByPk(req.params.id, {
       include: [
         { model: PostImage, as: 'images' },
-        { model: User, as: 'User', attributes: ['id', 'username'] }
+        { model: User, as: 'User', attributes: ['id', 'username'] },
+        { model: Tag, through: { attributes: [] } }
       ]
     })
 
@@ -133,9 +140,12 @@ exports.createPost = async (req, res) => {
       })
     }
 
+    const tags = await Tag.findAll()
+
     res.render('pages/createPost', {
       errors: [{ message: err.message || 'Error al crear la publicación' }],
-      old: req.body
+      old: req.body,
+      tags
     })
   }
 }
@@ -143,15 +153,21 @@ exports.createPost = async (req, res) => {
 exports.showEditForm = async (req, res) => {
   try {
     const post = await Post.findByPk(req.params.id, {
-      include: [{ model: PostImage, as: 'images' }]
+      include: [
+        { model: PostImage, as: 'images' },
+        { model: Tag } // To get currently associated tags
+      ]
     })
 
     if (!post || post.UserId !== req.user.id) {
       return res.redirect(`/profile/${req.user.username}`)
     }
 
+    const tags = await Tag.findAll()
+
     res.render('pages/editPost', {
       post,
+      tags,
       username: req.user.username,
       errors: [],
       old: {}
@@ -167,14 +183,25 @@ exports.updatePost = async (req, res) => {
     await postService.updatePost(req)
     res.redirect(`/profile/${req.user.username}?success=Publicación+actualizada+correctamente`)
   } catch (err) {
+    const tags = await Tag.findAll()
+    
     // ✅ Recuperar el post para re-renderizar el formulario
     const post = await Post.findByPk(req.params.id, {
-      include: [{ model: PostImage, as: 'images' }]
+      include: [
+        { model: PostImage, as: 'images' },
+        { model: Tag }
+      ]
     }).catch(() => null)
+
+    let errorMsg = err.message || 'Error al actualizar la publicación'
+    if (err.code === 'LIMIT_FILE_SIZE') errorMsg = 'Una imagen es muy grande. Máximo 10MB por archivo.'
+    if (err.code === 'LIMIT_FILE_COUNT') errorMsg = 'Has excedido el límite de imágenes permitidas.'
 
     res.render('pages/editPost', {
       post: post || { id: req.params.id, title: req.body.title, description: req.body.description },
-      errors: [{ message: 'Error al actualizar la publicación' }],
+      tags,
+      username: req.user.username,
+      errors: [{ message: errorMsg }],
       old: req.body
     })
   }

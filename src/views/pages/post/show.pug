@@ -123,6 +123,15 @@ block content
               .mb-4
                 p.mb-0(style="white-space: pre-wrap; line-height: 1.7;")= post.description
 
+            //- Tags
+            if post.Tags && post.Tags.length > 0
+              .mb-4
+                .d-flex.flex-wrap.gap-2
+                  each tag in post.Tags
+                    span.badge.rounded-pill.bg-primary.bg-opacity-10.text-primary.px-3.py-2
+                      i.bi.bi-tag.me-1
+                      = tag.name
+
             //- Estadísticas
             .d-flex.align-items-center.gap-4.text-muted.border-top.pt-3
               span

@@ -32,4 +32,29 @@ block content
                 accept="image/*"
               )
 
+            if tags && tags.length > 0
+              .mb-3
+                label.form-label Etiquetas (Tags)
+                .d-flex.flex-wrap.gap-2
+                  each tag in tags
+                    .form-check
+                      input.form-check-input(
+                        type="checkbox"
+                        name="tags"
+                        value=tag.id
+                        id=`tag-${tag.id}`
+                        checked=(old.tags && (Array.isArray(old.tags) ? old.tags.includes(tag.id.toString()) : old.tags === tag.id.toString()))
+                      )
+                      label.form-check-label(for=`tag-${tag.id}`)= tag.name
+
+            .mb-4
+              .form-check.form-switch
+                input.form-check-input(
+                  type="checkbox"
+                  name="commentsEnabled"
+                  id="commentsEnabled"
+                  checked=(old.commentsEnabled !== undefined ? old.commentsEnabled === 'on' : true)
+                )
+                label.form-check-label(for="commentsEnabled") Habilitar comentarios en esta publicación
+
             button.btn.btn-primary.w-100(type="submit") Publicar
