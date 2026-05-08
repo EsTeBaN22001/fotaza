@@ -1,0 +1,14 @@
+node_modules
+npm-debug.log
+.git
+.env
+Dockerfile
+docker-compose.yml
+src/public/uploads/*
+!src/public/uploads/seed_*.webp
+!src/public/uploads/.gitkeep
+dist
+build
+.cache
+tmp
+logs
