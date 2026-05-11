@@ -87,6 +87,19 @@ block content
                       each tag in post.Tags
                         span.badge.rounded-pill.bg-light.text-primary.border.x-small(style="font-size: 0.7rem;")= tag.name
                   small.text-muted.d-block.mb-2= new Date(post.created_at).toLocaleDateString('es-AR')
+                  
+                  //- Likes
+                  .mb-2
+                    - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
+                    - const likeCount = post.Likes ? post.Likes.length : 0
+                    button.btn.btn-link.p-0.text-decoration-none.like-btn.small(
+                      class=isLiked ? 'text-danger' : 'text-muted'
+                      data-post-id=post.id
+                      aria-label=isLiked ? 'Quitar me gusta' : 'Dar me gusta'
+                    )
+                      i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
+                      span.like-count= likeCount
+                      |  me gusta
 
                   .d-flex.justify-content-between.mt-3
                     // 🔐 VALIDACIÓN: Solo el dueño ve Editar/Eliminar
@@ -108,3 +121,5 @@ block content
                 a.btn.btn-link.p-0.ms-1(href='/posts/create') Crear una ahora
               else
                 | Este usuario aún no tiene publicaciones.
+
+  script(src="/js/likes.js")

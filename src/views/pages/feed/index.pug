@@ -70,6 +70,19 @@ block content
                   a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
                 p.card-text.text-truncate.small.text-muted.mb-2= post.description || ''
                 
+                //- Likes
+                .mb-2
+                  - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
+                  - const likeCount = post.Likes ? post.Likes.length : 0
+                  button.btn.btn-link.p-0.text-decoration-none.like-btn.small(
+                    class=isLiked ? 'text-danger' : 'text-muted'
+                    data-post-id=post.id
+                    aria-label=isLiked ? 'Quitar me gusta' : 'Dar me gusta'
+                  )
+                    i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
+                    span.like-count= likeCount
+                    |  me gusta
+                
                 //- Tags
                 if post.Tags && post.Tags.length > 0
                   .d-flex.flex-wrap.gap-1.mb-2
@@ -90,3 +103,5 @@ block content
           a.btn.btn-secondary(href=`?page=${pagination.page + 1}`)
             | Cargar más
             i.bi.bi-arrow-down.ms-1
+
+  script(src="/js/likes.js")

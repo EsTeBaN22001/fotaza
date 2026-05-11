@@ -16,7 +16,7 @@ block content
           .col-md-4.mb-4
             .card.h-100.shadow-sm
               if post.images.length > 0
-                img.card-img-top(src=post.images[0].url style="height: 200px; object-fit: cover;")
+                img.card-img-top(src=post.images[0].url alt=post.title style="height: 200px; object-fit: cover;")
               else
                 .card-img-top.bg-secondary.d-flex.align-items-center.justify-content-center(style="height: 200px;")
                   span.text-white Sin imagen
@@ -25,6 +25,19 @@ block content
                 h5.card-title= post.title
                 p.card-text.text-truncate= post.description
                 small.text-muted= new Date(post.created_at).toLocaleDateString('es-ES')
+                
+                //- Likes
+                .mt-2
+                  - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
+                  - const likeCount = post.Likes ? post.Likes.length : 0
+                  button.btn.btn-link.p-0.text-decoration-none.like-btn.small(
+                    class=isLiked ? 'text-danger' : 'text-muted'
+                    data-post-id=post.id
+                    aria-label=isLiked ? 'Quitar me gusta' : 'Dar me gusta'
+                  )
+                    i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
+                    span.like-count= likeCount
+                    |  me gusta
 
                 .d-flex.justify-content-between.mt-3
                   a.btn.btn-sm.btn-outline-primary(href=`/profile/edit/${post.id}`) ✏️ Editar
@@ -32,3 +45,5 @@ block content
                   form(action=`/profile/delete/${post.id}`, method='POST')
                     button.btn.btn-sm.btn-outline-danger(type='submit', onclick="return confirm('¿Eliminar esta publicación y sus imágenes?')")
                       | 🗑️ Eliminar
+
+  script(src="/js/likes.js")

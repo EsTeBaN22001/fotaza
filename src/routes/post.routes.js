@@ -18,5 +18,8 @@ router.get('/:id', controller.showPost)
 router.post('/:id/comments', authRequired, controller.createComment)
 router.post('/:id/comments/:commentId/delete', authRequired, controller.deleteComment)
 
+// ❤️ likes
+router.post('/:id/like', authRequired, controller.toggleLike)
+
 module.exports = router
 

@@ -1,4 +1,4 @@
-const { Post, PostImage, User, Follow, Tag } = require('../models')
+const { Post, PostImage, User, Follow, Tag, Like } = require('../models')
 const { Op } = require('sequelize')
 
 exports.getFollowedFeed = async (req, res) => {
@@ -33,6 +33,9 @@ exports.getFollowedFeed = async (req, res) => {
           {
             model: Tag,
             through: { attributes: [] }
+          },
+          {
+            model: Like
           }
         ],
         order: [['created_at', 'DESC']],

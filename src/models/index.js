@@ -9,6 +9,8 @@ const Follow = require('./Follow')
 const Notification = require('./Notification')
 const Collection = require('./Collection')
 const Interest = require('./Interest')
+const Like = require('./Like')
+
 
 // Relaciones
 User.hasMany(Post, { foreignKey: 'UserId', as: 'posts' })
@@ -47,6 +49,15 @@ User.belongsToMany(User, {
 User.hasMany(Notification)
 Collection.belongsTo(User)
 
+// ❤️ Likes
+User.hasMany(Like, { onDelete: 'CASCADE' })
+Like.belongsTo(User, { onDelete: 'CASCADE' })
+Post.hasMany(Like, { onDelete: 'CASCADE' })
+Like.belongsTo(Post, { onDelete: 'CASCADE' })
+// Atajo: Muchos a muchos entre User y Post a través de Like
+User.belongsToMany(Post, { through: Like, as: 'LikedPosts', onDelete: 'CASCADE' })
+Post.belongsToMany(User, { through: Like, as: 'LikedBy', onDelete: 'CASCADE' })
+
 module.exports = {
   User,
   Post,
@@ -58,5 +69,6 @@ module.exports = {
   Follow,
   Notification,
   Collection,
-  Interest
+  Interest,
+  Like
 }

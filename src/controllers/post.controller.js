@@ -1,4 +1,4 @@
-const { Post, PostImage, User, Tag, Comment } = require('../models')
+const { Post, PostImage, User, Tag, Comment, Like } = require('../models')
 const postService = require('../services/postService')
 
 exports.showCreate = async (req, res) => {
@@ -20,7 +20,8 @@ exports.showPost = async (req, res) => {
       include: [
         { model: PostImage, as: 'images' },
         { model: User, as: 'User', attributes: ['id', 'username'] },
-        { model: Tag, through: { attributes: [] } }
+        { model: Tag, through: { attributes: [] } },
+        { model: Like }
       ]
     })
 
@@ -38,6 +39,8 @@ exports.showPost = async (req, res) => {
     })
 
     const commentCount = comments.length
+    const likeCount = await Like.count({ where: { PostId: post.id } })
+    const isLiked = req.user ? await Like.findOne({ where: { PostId: post.id, UserId: req.user.id } }) : false
 
     // Toast messages from query params
     const errors = req.query.error ? [{ message: decodeURIComponent(req.query.error) }] : []
@@ -47,6 +50,8 @@ exports.showPost = async (req, res) => {
       post,
       comments,
       commentCount,
+      likeCount,
+      isLiked: !!isLiked,
       errors,
       success
     })
@@ -214,5 +219,42 @@ exports.deletePost = async (req, res) => {
     return res.redirect(`/profile/${req.user.username}?success=Publicación+eliminada+correctamente`)
   } catch (err) {
     return res.redirect(`/profile/${req.user.username}?error=Error+al+eliminar`)
+  }
+}
+
+// ❤️ Toggle Like
+exports.toggleLike = async (req, res) => {
+  try {
+    const postId = req.params.id
+    const userId = req.user.id
+
+    const post = await Post.findByPk(postId)
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Publicación no encontrada' })
+    }
+
+    const existingLike = await Like.findOne({
+      where: { PostId: postId, UserId: userId }
+    })
+
+    let liked = false
+    if (existingLike) {
+      await existingLike.destroy()
+      liked = false
+    } else {
+      await Like.create({ PostId: postId, UserId: userId })
+      liked = true
+    }
+
+    const likeCount = await Like.count({ where: { PostId: postId } })
+
+    return res.json({
+      success: true,
+      liked,
+      likeCount
+    })
+  } catch (err) {
+    console.error('❌ Error en toggleLike:', err)
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' })
   }
 }

@@ -135,6 +135,15 @@ block content
             //- Estadísticas
             .d-flex.align-items-center.gap-4.text-muted.border-top.pt-3
               span
+                button.btn.btn-link.p-0.text-decoration-none.like-btn(
+                  class=isLiked ? 'text-danger' : 'text-muted'
+                  data-post-id=post.id
+                  aria-label=isLiked ? 'Quitar me gusta' : 'Dar me gusta'
+                )
+                  i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
+                  span.like-count= likeCount
+                  |  me gusta
+              span
                 i.bi.bi-chat.me-1
                 | #{commentCount} comentario#{commentCount !== 1 ? 's' : ''}
               if post.images && post.images.length > 0
@@ -201,3 +210,5 @@ block content
               .text-center.text-muted.py-4
                 i.bi.bi-chat.d-block(style="font-size: 2rem;")
                 p.mt-2 Aún no hay comentarios. ¡Sé el primero!
+
+  script(src="/js/likes.js")
