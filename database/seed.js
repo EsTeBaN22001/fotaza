@@ -11,7 +11,8 @@ const {
   Rating,
   Follow,
   Notification,
-  Collection
+  Collection,
+  Like
 } = require('../src/models')
 
 // Rutas de imágenes del seed (ya incluidas en el repo como WebP)
@@ -68,6 +69,7 @@ async function seed() {
     role: 'user'
   })
 
+  const allUsers = [esteban, lucia, marcos, ana]
   console.log('  ✅ 4 usuarios creados')
 
   // ============================
@@ -203,6 +205,7 @@ async function seed() {
   ])
   await post9.addTags([tags['naturaleza'], tags['paisaje']])
 
+  const allPosts = [post1, post2, post3, post4, post5, post6, post7, post8, post9]
   console.log('  ✅ 9 publicaciones creadas (con imágenes y tags)')
 
   // ============================
@@ -308,6 +311,28 @@ async function seed() {
   console.log(`  ✅ ${ratingsData.length} ratings creados`)
 
   // ============================
+  // ❤️ NUEVO: Crear Likes
+  // ============================
+  console.log('\n❤️  Creando likes...')
+  const likesData = []
+  
+  for (const post of allPosts) {
+    // Cada post recibe entre 1 y 4 likes de usuarios aleatorios
+    const numLikes = 1 + Math.floor(Math.random() * 4)
+    const shuffledUsers = [...allUsers].sort(() => 0.5 - Math.random())
+    
+    for (let i = 0; i < numLikes; i++) {
+      likesData.push({
+        PostId: post.id,
+        UserId: shuffledUsers[i].id
+      })
+    }
+  }
+  
+  await Like.bulkCreate(likesData)
+  console.log(`  ✅ ${likesData.length} likes creados`)
+
+  // ============================
   // 8. Crear notificaciones
   // ============================
   console.log('\n🔔 Creando notificaciones...')
@@ -359,6 +384,7 @@ async function seed() {
   console.log('  🏷️  9 tags')
   console.log('  🤝 9 relaciones de seguimiento')
   console.log(`  ⭐ ${ratingsData.length} ratings`)
+  console.log(`  ❤️  ${likesData.length} likes`)
   console.log('  🔔 4 notificaciones')
   console.log('  📁 3 colecciones')
   console.log('\n🔑 Credenciales:')

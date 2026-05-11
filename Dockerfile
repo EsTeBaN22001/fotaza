@@ -21,4 +21,4 @@ EXPOSE 3000
 
 # Command to run the application
 # We use npm start or node src/app.js depending on the project structure
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]
