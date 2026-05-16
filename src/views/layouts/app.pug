@@ -33,8 +33,9 @@ html
           ul.navbar-nav.me-auto
             li.nav-item
               a.nav-link(href="/home") Inicio
-            li.nav-item
-              a.nav-link(href="/posts/create") Crear Post
+            if user
+              li.nav-item
+                a.nav-link(href="/posts/create") Crear Post
             // ✅ NUEVO: Feed de usuarios que sigo (solo para autenticados)
             if user
               li.nav-item

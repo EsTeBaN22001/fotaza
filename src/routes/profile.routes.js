@@ -20,9 +20,9 @@ router.post('/delete/:id', authRequired, postController.deletePost) // ✅ POST 
 // profile feat
 router.get('/me', authRequired, (req, res) => res.redirect(`/profile/${req.user.username}`))
 
-router.get('/:username', sanitizeUsername, profileController.getProfile)
-router.get('/:username/followers', sanitizeUsername, profileController.getFollowersList)
-router.get('/:username/following', sanitizeUsername, profileController.getFollowingList)
+router.get('/:username', authRequired, sanitizeUsername, profileController.getProfile)
+router.get('/:username/followers', authRequired, sanitizeUsername, profileController.getFollowersList)
+router.get('/:username/following', authRequired, sanitizeUsername, profileController.getFollowingList)
 
 router.post('/:username/follow', authRequired, sanitizeUsername, profileController.toggleFollow)
 

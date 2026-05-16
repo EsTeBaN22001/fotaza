@@ -11,6 +11,7 @@ block content
             h3.text-center.mb-4 Login
 
             form(method="POST" action="/auth/login")
+              input(type="hidden" name="returnTo" value=returnTo)
 
               .mb-3
                 label.form-label Email

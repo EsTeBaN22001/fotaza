@@ -98,14 +98,21 @@ block content
               .mb-2
                 - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
                 - const likeCount = post.Likes ? post.Likes.length : 0
-                button.btn.btn-link.p-0.text-decoration-none.like-btn.small(
-                  class=isLiked ? 'text-danger' : 'text-muted'
-                  data-post-id=post.id
-                  aria-label=isLiked ? 'Quitar me gusta' : 'Dar me gusta'
-                )
-                  i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
-                  span.like-count= likeCount
-                  |  me gusta
+                if user
+                  button.btn.btn-link.p-0.text-decoration-none.like-btn.small(
+                    class=isLiked ? 'text-danger' : 'text-muted'
+                    data-post-id=post.id
+                    aria-label=isLiked ? 'Quitar me gusta' : 'Dar me gusta'
+                  )
+                    i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
+                    span.like-count= likeCount
+                    |  me gusta
+                else
+                  span.text-muted.small(title="Inicia sesión para dar me gusta")
+                    i.bi.bi-heart.me-1
+                    span.like-count= likeCount
+                    |  me gusta
+                    i.bi.bi-lock-fill.ms-1.text-secondary(style="font-size: 0.75rem;")
 
               //- Tags
               if post.Tags && post.Tags.length > 0
@@ -118,7 +125,11 @@ block content
               small.text-muted.d-block.mb-2
                 | Por 
                 if post.User && post.User.username
-                  a.text-decoration-none.fw-bold(href=`/profile/${post.User.username}`)= post.User.username
+                  if user
+                    a.text-decoration-none.fw-bold(href=`/profile/${post.User.username}`)= post.User.username
+                  else
+                    span.fw-bold(title="Inicia sesión para ver perfiles")= post.User.username
+                      i.bi.bi-lock-fill.ms-1.text-secondary(style="font-size: 0.7rem;")
                 else
                   | Anónimo
                 |  • 

@@ -57,8 +57,14 @@ exports.attachUser = async (req, res, next) => {
  */
 exports.authRequired = (req, res, next) => {
   if (!req.user) {
-    // Guardar la ruta original para redirigir después del login
-    return res.redirect(`/auth/login?returnTo=${encodeURIComponent(req.originalUrl)}`)
+    // Si es una petición AJAX, devolvemos 401
+    if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
+      return res.status(401).json({ error: 'No autorizado' })
+    }
+    // Pasamos el error al manejador global
+    const error = new Error('Acceso restringido')
+    error.status = 401
+    return next(error)
   }
   next()
 }

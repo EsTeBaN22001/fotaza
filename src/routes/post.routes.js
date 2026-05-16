@@ -12,7 +12,7 @@ router.get('/create', authRequired, controller.showCreate)
 router.post('/', authRequired, upload.array('images', 5), controller.createPost)
 
 // 📄 ver publicación individual
-router.get('/:id', controller.showPost)
+router.get('/:id', authRequired, controller.showPost)
 
 // 💬 comentarios
 router.post('/:id/comments', authRequired, controller.createComment)

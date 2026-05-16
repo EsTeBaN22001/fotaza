@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
       })
 
       if (response.status === 401) {
-        window.location.href = '/auth/login'
+        // Redirigimos a la página del post para que el middleware muestre la invitación
+        window.location.href = `/posts/${postId}`
         return
       }
 

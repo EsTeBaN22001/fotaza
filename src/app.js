@@ -64,9 +64,23 @@ app.use((req, res) => {
 
 // ❌ Manejo de errores globales (catch-all)
 app.use((err, req, res, next) => {
-  console.error('💥 Error no capturado:', err)
-  res.status(500).render('pages/error', {
-    message: 'Error interno del servidor',
-    errors: [{ message: err.message }]
+  const status = err.status || 500
+  const message = err.message || 'Error interno del servidor'
+
+  console.error(`💥 [${status}] Error:`, err.message)
+
+  // Si es un error de autorización (401), usamos la vista dedicada
+  if (status === 401) {
+    return res.status(401).render('pages/unauthorized', {
+      title: 'Acceso Restringido',
+      returnTo: req.originalUrl
+    })
+  }
+
+  // Para otros errores, usamos la página de error genérica
+  res.status(status).render('pages/error', {
+    status,
+    message: status === 500 ? 'Algo salió mal en nuestro servidor' : message,
+    errors: process.env.NODE_ENV === 'development' ? [{ message: err.message }] : []
   })
 })

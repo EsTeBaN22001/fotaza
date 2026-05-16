@@ -3,20 +3,23 @@ const authService = require('../services/authService')
 exports.getLogin = (req, res) => {
   res.render('pages/login', {
     errors: [],
-    old: {}
+    old: {},
+    returnTo: req.query.returnTo || ''
   })
 }
 
 exports.postlogin = async (req, res) => {
   try {
     const token = await authService.login(req.body.email, req.body.password)
+    const returnTo = req.body.returnTo || '/home'
 
     res.cookie('token', token)
-    res.redirect('/home')
+    res.redirect(returnTo)
   } catch (err) {
     res.render('pages/login', {
       errors: [{ message: err.message }],
-      old: req.body
+      old: req.body,
+      returnTo: req.body.returnTo || ''
     })
   }
 }
@@ -24,7 +27,8 @@ exports.postlogin = async (req, res) => {
 exports.getRegister = (req, res) => {
   res.render('pages/register', {
     errors: [],
-    old: {}
+    old: {},
+    returnTo: req.query.returnTo || ''
   })
 }
 
@@ -35,12 +39,14 @@ exports.postRegister = async (req, res) => {
     return res.render('pages/login', {
       success: 'Usuario registrado correctamente',
       errors: [],
-      old: {}
+      old: {},
+      returnTo: req.body.returnTo || ''
     })
   } catch (err) {
     return res.render('pages/register', {
       errors: [{ message: err.message }],
-      old: req.body
+      old: req.body,
+      returnTo: req.body.returnTo || ''
     })
   }
 }
