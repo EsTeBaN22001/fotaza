@@ -32,15 +32,19 @@ html
           // izquierda (links principales)
           ul.navbar-nav.me-auto
             li.nav-item
-              a.nav-link(href="/home") Inicio
+              a.nav-link(href="/home")
+                i.bi.bi-house.me-1
+                | Inicio
             if user
               li.nav-item
-                a.nav-link(href="/posts/create") Crear Post
+                a.nav-link(href="/posts/create")
+                  i.bi.bi-plus-square.me-1
+                  | Crear Post
             // ✅ NUEVO: Feed de usuarios que sigo (solo para autenticados)
             if user
               li.nav-item
                 a.nav-link(href="/feed") 
-                  i.bi.bi-rss-fill.me-1(style="font-size: 0.9rem;")
+                  i.bi.bi-rss.me-1
                   | Mis Seguidos
 
           // derecha (usuario)
@@ -55,25 +59,34 @@ html
 
                 ul.dropdown-menu.dropdown-menu-end
                   li
-                    a.dropdown-item(href=`/profile/${user.username}`) Mi Perfil
+                    a.dropdown-item(href=`/profile/${user.username}`)
+                      i.bi.bi-person-circle.me-2
+                      | Mi Perfil
                   li
                     a.dropdown-item(href="/profile/saved")
-                      i.bi.bi-bookmark.me-1
+                      i.bi.bi-bookmark.me-2
                       | Mis Guardados
                   li
                     a.dropdown-item(href="/notifications") 
+                      i.bi.bi-bell.me-2
                       | Notificaciones
                       if unreadNotifications && unreadNotifications > 0
                         span.badge.bg-danger.rounded-pill.ms-1= unreadNotifications
                   li
                     hr.dropdown-divider
                   li
-                    a.dropdown-item.text-danger(href="/auth/logout") Cerrar sesión
+                    a.dropdown-item.text-danger(href="/auth/logout")
+                      i.bi.bi-box-arrow-right.me-2
+                      | Cerrar sesión
             else
               li.nav-item
-                a.nav-link(href="/auth/login") Iniciar Sesión
+                a.nav-link(href="/auth/login")
+                  i.bi.bi-box-arrow-in-right.me-1
+                  | Iniciar Sesión
               li.nav-item
-                a.nav-link(href="/auth/register") Registrarse
+                a.nav-link(href="/auth/register")
+                  i.bi.bi-person-plus.me-1
+                  | Registrarse
 
     // 📢 MENSAJES GLOBALES
     //- .container.mt-3
