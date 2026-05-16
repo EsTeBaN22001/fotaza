@@ -98,6 +98,13 @@ block content
               span
                 i.bi.bi-chat.me-1
                 | #{commentCount}
+              span.ms-auto
+                button.btn.btn-link.p-0.text-decoration-none.save-btn(
+                  class=isSaved ? 'text-primary' : 'text-muted'
+                  data-post-id=post.id
+                  aria-label=isSaved ? 'Quitar de guardados' : 'Guardar'
+                )
+                  i.bi(class=isSaved ? 'bi-bookmark-fill' : 'bi-bookmark')
 
         //- SECCIÓN DE COMENTARIOS
         .card.shadow-sm.border-0.mb-4
@@ -153,3 +160,4 @@ block content
     }
 
   script(src="/js/likes.js")
+  script(src="/js/bookmarks.js")

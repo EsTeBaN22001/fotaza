@@ -57,6 +57,10 @@ html
                   li
                     a.dropdown-item(href=`/profile/${user.username}`) Mi Perfil
                   li
+                    a.dropdown-item(href="/profile/saved")
+                      i.bi.bi-bookmark.me-1
+                      | Mis Guardados
+                  li
                     a.dropdown-item(href="/notifications") 
                       | Notificaciones
                       if unreadNotifications && unreadNotifications > 0

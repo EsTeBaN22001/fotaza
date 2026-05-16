@@ -10,6 +10,7 @@ const Notification = require('./Notification')
 const Collection = require('./Collection')
 const Interest = require('./Interest')
 const Like = require('./Like')
+const Bookmark = require('./Bookmark')
 
 
 // Relaciones
@@ -58,6 +59,15 @@ Like.belongsTo(Post, { onDelete: 'CASCADE' })
 User.belongsToMany(Post, { through: Like, as: 'LikedPosts', onDelete: 'CASCADE' })
 Post.belongsToMany(User, { through: Like, as: 'LikedBy', onDelete: 'CASCADE' })
 
+// 🔖 Bookmarks (Favoritos)
+User.hasMany(Bookmark, { onDelete: 'CASCADE' })
+Bookmark.belongsTo(User, { onDelete: 'CASCADE' })
+Post.hasMany(Bookmark, { onDelete: 'CASCADE' })
+Bookmark.belongsTo(Post, { onDelete: 'CASCADE' })
+// Atajo: Muchos a muchos entre User y Post a través de Bookmark
+User.belongsToMany(Post, { through: Bookmark, as: 'SavedPosts', onDelete: 'CASCADE' })
+Post.belongsToMany(User, { through: Bookmark, as: 'SavedBy', onDelete: 'CASCADE' })
+
 module.exports = {
   User,
   Post,
@@ -70,5 +80,6 @@ module.exports = {
   Notification,
   Collection,
   Interest,
-  Like
+  Like,
+  Bookmark
 }

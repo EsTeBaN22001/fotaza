@@ -1,37 +1,41 @@
-extends ../../layouts/app
+extends ../layouts/app
 
 block content
   .container.mt-4
-    h3.fw-bold.mb-3
-      i.bi.bi-rss-fill.me-2
-      = title
+    .d-flex.align-items-center.mb-4
+      h2.fw-bold.mb-0
+        i.bi.bi-bookmark-fill.text-primary.me-2
+        | Mis Guardados
 
     if !posts || posts.length === 0
       .text-center.py-5
-        .display-4.mb-3 📭
-        h5.fw-bold Aún no hay publicaciones en tu feed
-        p.text-muted.mb-4 Sigue a más usuarios para ver su contenido aquí.
-        a.btn.btn-outline-primary(href="/home")
-          i.bi.bi-house.me-1
+        .display-1.mb-3
+          i.bi.bi-bookmark.text-muted
+        h4.fw-bold.text-muted Aún no has guardado publicaciones
+        p.text-muted.mb-4
+          | Explora el inicio y guarda las publicaciones que más te gusten.
+        a.btn.btn-primary(href='/home')
+          i.bi.bi-house-door.me-2
           | Explorar publicaciones
 
     else
-      .row.g-3
+      .row
         each post in posts
-          .col-md-4.col-sm-6
-            .card.h-100.shadow-sm
-              //- ===== IMAGEN (Slide si hay más de una) =====
+          .col-md-4.mb-4
+            .card.shadow-sm.h-100
+
+              //- ===== IMÁGENES =====
               if post.images && post.images.length > 0
                 if post.images.length === 1
                   a(href=`/posts/${post.id}`)
                     img.card-img-top(
                       src=post.images[0].url
                       alt=post.title
-                      style="height: 220px; object-fit: cover;"
+                      style="height: 250px; object-fit: cover;"
                       loading="lazy"
                     )
                 else
-                  - const carouselId = 'carousel-feed-' + post.id
+                  - const carouselId = 'carousel-saved-' + post.id
                   .carousel.slide(id=carouselId data-bs-ride="carousel")
                     .carousel-inner
                       each img, index in post.images
@@ -40,36 +44,36 @@ block content
                             img.d-block.w-100(
                               src=img.url
                               alt=post.title
-                              style="height: 220px; object-fit: cover;"
+                              style="height: 250px; object-fit: cover;"
                               loading="lazy"
                             )
-                    button.carousel-control-prev(type="button" data-bs-target='#' + carouselId data-bs-slide="prev")
-                      span.carousel-control-prev-icon(aria-hidden="true")
-                    button.carousel-control-next(type="button" data-bs-target='#' + carouselId data-bs-slide="next")
-                      span.carousel-control-next-icon(aria-hidden="true")
+                    button.carousel-control-prev(
+                      type="button"
+                      data-bs-target='#' + carouselId
+                      data-bs-slide="prev"
+                    )
+                      span.carousel-control-prev-icon
+                    button.carousel-control-next(
+                      type="button"
+                      data-bs-target='#' + carouselId
+                      data-bs-slide="next"
+                    )
+                      span.carousel-control-next-icon
               else
                 a(href=`/posts/${post.id}`)
                   img.card-img-top(
                     src="/placeholder.svg"
                     alt="Sin imagen"
-                    style="height: 220px; object-fit: cover;"
+                    style="height: 250px; object-fit: cover;"
                   )
 
+              //- ===== BODY =====
               .card-body.d-flex.flex-column
-                //- Autor
-                .d-flex.align-items-center.mb-2
-                  .bg-light.rounded-circle.d-flex.align-items-center.justify-content-center.me-2(style="width: 32px; height: 32px; min-width: 32px;")
-                    i.bi.bi-person.small.text-muted
-                  if post.User
-                    a.fw-bold.small.text-decoration-none(href=`/profile/${post.User.username}`)= post.User.username
-                  else
-                    small.fw-bold Anónimo
-
-                //- Título y descripción
-                h6.card-title
+                h5.card-title
                   a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
-                p.card-text.text-truncate.small.text-muted.mb-2= post.description || ''
-                
+
+                p.card-text.text-muted.mb-2= post.description && post.description.length > 100 ? post.description.substring(0, 100) + '...' : (post.description || '')
+
                 //- Likes & Bookmarks
                 .d-flex.align-items-center.gap-3.mb-2
                   - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
@@ -90,27 +94,23 @@ block content
                     aria-label=isSaved ? 'Quitar de guardados' : 'Guardar'
                   )
                     i.bi(class=isSaved ? 'bi-bookmark-fill' : 'bi-bookmark')
-                
+
                 //- Tags
                 if post.Tags && post.Tags.length > 0
-                  .d-flex.flex-wrap.gap-1.mb-2
+                  .d-flex.flex-wrap.gap-1.mb-3
                     each tag in post.Tags
                       span.badge.rounded-pill.bg-light.text-primary.border.small= tag.name
-                
+
                 .flex-grow-1
 
-                //- Footer
-                .d-flex.justify-content-between.align-items-center.mt-2
-                  small.text-muted= new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
-                  a.btn.btn-sm.btn-outline-primary(href=`/posts/${post.id}`) Ver
-
-      //- Paginación
-      if posts.length === 0
-      else if pagination && pagination.hasNext
-        .text-center.mt-4
-          a.btn.btn-secondary(href=`?page=${pagination.page + 1}`)
-            | Cargar más
-            i.bi.bi-arrow-down.ms-1
+                small.text-muted.d-block.mb-2
+                  | Por 
+                  if post.User && post.User.username
+                    a.text-decoration-none.fw-bold(href=`/profile/${post.User.username}`)= post.User.username
+                  else
+                    | Anónimo
+                  |  • 
+                  span= new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 
   script(src="/js/likes.js")
   script(src="/js/bookmarks.js")

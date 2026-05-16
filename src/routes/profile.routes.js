@@ -8,6 +8,10 @@ const postController = require('../controllers/post.controller')
 // 📸 Ver mis publicaciones
 router.get('/my-posts', authRequired, profileController.getMyPosts)
 
+// 🔖 Ver publicaciones guardadas
+const bookmarkController = require('../controllers/bookmark.controller')
+router.get('/saved', authRequired, bookmarkController.getSaved)
+
 const upload = require('../middlewares/uploadMiddleware')
 
 // ✏️ Editar: CAMBIAR .put() POR .post()

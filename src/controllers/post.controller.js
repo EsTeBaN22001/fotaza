@@ -1,4 +1,4 @@
-const { Post, PostImage, User, Tag, Comment, Like } = require('../models')
+const { Post, PostImage, User, Tag, Comment, Like, Bookmark } = require('../models')
 const postService = require('../services/postService')
 
 exports.showCreate = async (req, res) => {
@@ -21,7 +21,8 @@ exports.showPost = async (req, res) => {
         { model: PostImage, as: 'images' },
         { model: User, as: 'User', attributes: ['id', 'username'] },
         { model: Tag, through: { attributes: [] } },
-        { model: Like }
+        { model: Like },
+        { model: Bookmark }
       ]
     })
 
@@ -41,6 +42,8 @@ exports.showPost = async (req, res) => {
     const commentCount = comments.length
     const likeCount = await Like.count({ where: { PostId: post.id } })
     const isLiked = req.user ? await Like.findOne({ where: { PostId: post.id, UserId: req.user.id } }) : false
+    const saveCount = await Bookmark.count({ where: { PostId: post.id } })
+    const isSaved = req.user ? await Bookmark.findOne({ where: { PostId: post.id, UserId: req.user.id } }) : false
 
     // Toast messages from query params
     const errors = req.query.error ? [{ message: decodeURIComponent(req.query.error) }] : []
@@ -52,6 +55,8 @@ exports.showPost = async (req, res) => {
       commentCount,
       likeCount,
       isLiked: !!isLiked,
+      saveCount,
+      isSaved: !!isSaved,
       errors,
       success
     })

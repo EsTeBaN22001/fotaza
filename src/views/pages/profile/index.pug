@@ -88,8 +88,8 @@ block content
                         span.badge.rounded-pill.bg-light.text-primary.border.x-small(style="font-size: 0.7rem;")= tag.name
                   small.text-muted.d-block.mb-2= new Date(post.created_at).toLocaleDateString('es-AR')
                   
-                  //- Likes
-                  .mb-2
+                  //- Likes & Bookmarks
+                  .d-flex.align-items-center.gap-3.mb-2
                     - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
                     - const likeCount = post.Likes ? post.Likes.length : 0
                     button.btn.btn-link.p-0.text-decoration-none.like-btn.small(
@@ -100,6 +100,14 @@ block content
                       i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
                       span.like-count= likeCount
                       |  me gusta
+
+                    - const isSaved = user && post.Bookmarks && post.Bookmarks.some(b => b.UserId === user.id)
+                    button.btn.btn-link.p-0.text-decoration-none.save-btn.small(
+                      class=isSaved ? 'text-primary' : 'text-muted'
+                      data-post-id=post.id
+                      aria-label=isSaved ? 'Quitar de guardados' : 'Guardar'
+                    )
+                      i.bi(class=isSaved ? 'bi-bookmark-fill' : 'bi-bookmark')
 
                   .d-flex.justify-content-between.mt-3
                     // 🔐 VALIDACIÓN: Solo el dueño ve Editar/Eliminar
@@ -123,3 +131,4 @@ block content
                 | Este usuario aún no tiene publicaciones.
 
   script(src="/js/likes.js")
+  script(src="/js/bookmarks.js")

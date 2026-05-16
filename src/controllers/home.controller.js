@@ -1,4 +1,4 @@
-const { Post, PostImage, User, Tag, Like } = require('../models')
+const { Post, PostImage, User, Tag, Like, Bookmark } = require('../models')
 
 exports.getHome = async (req, res) => {
   try {
@@ -19,6 +19,9 @@ exports.getHome = async (req, res) => {
         },
         {
           model: Like
+        },
+        {
+          model: Bookmark
         }
       ],
       order: [['created_at', 'DESC']],

@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const controller = require('../controllers/post.controller')
+const bookmarkController = require('../controllers/bookmark.controller')
 const { authRequired } = require('../middlewares/authMiddleware')
 const upload = require('../middlewares/uploadMiddleware')
 
@@ -20,6 +21,9 @@ router.post('/:id/comments/:commentId/delete', authRequired, controller.deleteCo
 
 // ❤️ likes
 router.post('/:id/like', authRequired, controller.toggleLike)
+
+// 🔖 favoritos
+router.post('/:id/save', authRequired, bookmarkController.toggleBookmark)
 
 module.exports = router
 
