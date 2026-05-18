@@ -1,6 +1,6 @@
 // src/middlewares/authMiddleware.js
 const jwt = require('jsonwebtoken')
-const { User } = require('../models')
+const { User, Notification } = require('../models')
 
 /**
  * Middleware combinado:
@@ -33,6 +33,16 @@ exports.attachUser = async (req, res, next) => {
 
     req.user = user
     res.locals.user = user
+
+    try {
+      const unreadNotifications = await Notification.count({
+        where: { UserId: user.id, is_read: false }
+      })
+      res.locals.unreadNotifications = unreadNotifications
+    } catch (e) {
+      console.error('Error loading unread notifications count:', e)
+      res.locals.unreadNotifications = 0
+    }
 
     if (req.query.success) res.locals.success = req.query.success
     if (req.query.error) res.locals.error = req.query.error

@@ -47,7 +47,10 @@ User.belongsToMany(User, {
   otherKey: 'following_id' // Columna que apunta al usuario que RECIBE el follow
 })
 
-User.hasMany(Notification)
+// 🔔 Notificaciones
+User.hasMany(Notification, { foreignKey: 'UserId', as: 'notifications' })
+Notification.belongsTo(User, { foreignKey: 'UserId', as: 'Receiver' })
+Notification.belongsTo(User, { foreignKey: 'actorId', as: 'Actor' })
 Collection.belongsTo(User)
 
 // ❤️ Likes

@@ -12,6 +12,7 @@ const profileRoutes = require('./routes/profile.routes')
 const feedRoutes = require('./routes/feed.routes')
 const reportRoutes = require('./routes/report.routes')
 const moderatorRoutes = require('./routes/moderator.routes')
+const notificationRoutes = require('./routes/notification.routes')
 
 const { attachUser } = require('./middlewares/authMiddleware')
 
@@ -43,6 +44,7 @@ app.use('/profile', profileRoutes)
 app.use('/feed', feedRoutes)
 app.use('/reports', reportRoutes)
 app.use('/moderator', moderatorRoutes)
+app.use('/notifications', notificationRoutes)
 
 // 🚀 Iniciar servidor después de sincronizar BD
 sequelize

@@ -1,0 +1,161 @@
+extends ../../layouts/app
+
+block content
+  .row.justify-content-center
+    .col-md-8
+      .d-flex.justify-content-between.align-items-center.mb-4
+        h2.mb-0 
+          i.bi.bi-bell.me-2
+          | Notificaciones
+        if unreadCount > 0
+          form(action="/notifications/read-all" method="POST" class="d-inline")
+            button.btn.btn-outline-primary.btn-sm(type="submit")
+              i.bi.bi-check-all.me-1
+              | Marcar todas como leídas
+      
+      .card.shadow-sm.border-0.rounded-4
+        .card-body.p-0
+          if notifications && notifications.length > 0
+            ul.list-group.list-group-flush.rounded-4
+              each notif in notifications
+                - const isUnread = !notif.is_read
+                - const bgColor = isUnread ? 'bg-primary-subtle' : ''
+                - const iconColor = isUnread ? 'text-primary' : 'text-muted'
+                - let iconClass = 'bi-bell'
+                - let linkUrl = '#'
+                
+                //- Definir íconos y links según el tipo
+                if notif.type === 'COMMENT_CREATED'
+                  - iconClass = 'bi-chat-dots text-primary'
+                  - linkUrl = `/posts/${notif.relatedId}`
+                else if notif.type === 'POST_LIKED'
+                  - iconClass = 'bi-heart-fill text-danger'
+                  - linkUrl = `/posts/${notif.relatedId}`
+                else if notif.type === 'USER_FOLLOWED'
+                  - iconClass = 'bi-person-plus-fill text-info'
+                  if notif.Actor
+                    - linkUrl = `/profile/${notif.Actor.username}`
+                else if notif.type === 'PUBLICATION_INTERESTED'
+                  - iconClass = 'bi-bookmark-fill text-success'
+                  - linkUrl = `/posts/${notif.relatedId}`
+                else if notif.type === 'POST_UNDER_REVIEW' || notif.type === 'COMMENT_REPORTED'
+                  - iconClass = 'bi-exclamation-triangle-fill text-warning'
+                  if notif.relatedId
+                    - linkUrl = `/posts/${notif.relatedId}`
+                else if notif.type === 'PUBLICATION_REMOVED' || notif.type === 'ACCOUNT_SUSPENDED'
+                  - iconClass = 'bi-x-circle-fill text-danger'
+                
+                li.list-group-item.p-3.border-bottom(class=bgColor id=`notif-${notif.id}`)
+                  .d-flex.align-items-start
+                    .me-3.mt-1
+                      i.bi.fs-4(class=iconClass)
+                    .flex-grow-1
+                      p.mb-1
+                        if notif.Actor
+                          strong= notif.Actor.username
+                          |  
+                        | #{notif.message}
+                      small.text-muted
+                        i.bi.bi-clock.me-1
+                        | #{new Date(notif.created_at).toLocaleString('es-AR')}
+                    .ms-3.d-flex.flex-column.align-items-end
+                      .d-flex.gap-2.align-items-center.mb-2
+                        if linkUrl !== '#'
+                          a.btn.btn-sm.btn-outline-secondary(href=linkUrl onclick=`if(${isUnread}) markRead(${notif.id})`)
+                            | Ver
+                        button.btn.btn-sm.btn-outline-danger(type="button" onclick=`deleteNotif(${notif.id})` title="Eliminar")
+                          i.bi.bi-trash
+                      if isUnread
+                        button.btn.btn-sm.btn-link.text-decoration-none.p-0.mb-1(type="button" onclick=`markRead(${notif.id})` title="Marcar como leída")
+                          i.bi.bi-circle-fill.text-primary.fs-6
+            
+            if totalPages > 1
+              .p-3.border-top
+                nav
+                  ul.pagination.justify-content-center.mb-0
+                    li.page-item(class=(currentPage === 1 ? 'disabled' : ''))
+                      a.page-link(href=`/notifications?page=${currentPage - 1}`) Anterior
+                    - for (let i = 1; i <= totalPages; i++)
+                      li.page-item(class=(currentPage === i ? 'active' : ''))
+                        a.page-link(href=`/notifications?page=${i}`)= i
+                    li.page-item(class=(currentPage === totalPages ? 'disabled' : ''))
+                      a.page-link(href=`/notifications?page=${currentPage + 1}`) Siguiente
+
+          else
+            .text-center.py-5
+              i.bi.bi-bell-slash.display-4.text-muted.mb-3
+              h4.text-muted Sin notificaciones
+              p.text-muted.mb-0 No tienes nuevas alertas en este momento.
+
+  //- Agregar script para llamadas AJAX
+  script.
+    async function markRead(id) {
+      try {
+        const res = await fetch(`/notifications/${id}/read`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        if (res.ok) {
+          const item = document.getElementById(`notif-${id}`);
+          if (item) {
+            item.classList.remove('bg-primary-subtle');
+            const dotBtn = item.querySelector('.bi-circle-fill');
+            if (dotBtn) dotBtn.parentElement.remove();
+            
+            // Actualizar badge del header si existe
+            const badge = document.querySelector('.navbar .bi-bell + .badge');
+            if (badge) {
+              const currentCount = parseInt(badge.textContent);
+              if (currentCount > 1) {
+                badge.textContent = currentCount - 1;
+              } else {
+                badge.remove();
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    async function deleteNotif(id) {
+      if (!confirm('¿Seguro que deseas eliminar esta notificación?')) return;
+      try {
+        const res = await fetch(`/notifications/${id}/delete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        if (res.ok) {
+          const item = document.getElementById(`notif-${id}`);
+          if (item) {
+            const isUnread = item.classList.contains('bg-primary-subtle');
+            if (isUnread) {
+              const badge = document.querySelector('.navbar .bi-bell + .badge');
+              if (badge) {
+                const currentCount = parseInt(badge.textContent);
+                if (currentCount > 1) {
+                  badge.textContent = currentCount - 1;
+                } else {
+                  badge.remove();
+                }
+              }
+            }
+            item.remove();
+            
+            const list = document.querySelector('.list-group');
+            if (list && list.children.length === 0) {
+              location.reload();
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }

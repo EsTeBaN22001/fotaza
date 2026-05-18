@@ -1,5 +1,6 @@
 const { Post, PostImage, User, Tag, Comment, Like, Bookmark } = require('../models')
 const postService = require('../services/postService')
+const notificationService = require('../services/notificationService')
 
 exports.showCreate = async (req, res) => {
   try {
@@ -92,6 +93,14 @@ exports.createComment = async (req, res) => {
       content: content.trim(),
       PostId: postId,
       UserId: req.user.id
+    })
+
+    // 🔔 Notificar al autor
+    await notificationService.createNotification({
+      receiverId: post.UserId,
+      actorId: req.user.id,
+      type: 'COMMENT_CREATED',
+      relatedId: postId
     })
 
     return res.redirect(`/posts/${postId}?success=Comentario+publicado`)
@@ -258,6 +267,14 @@ exports.toggleLike = async (req, res) => {
     } else {
       await Like.create({ PostId: postId, UserId: userId })
       liked = true
+
+      // 🔔 Notificar al autor
+      await notificationService.createNotification({
+        receiverId: post.UserId,
+        actorId: userId,
+        type: 'POST_LIKED',
+        relatedId: postId
+      })
     }
 
     const likeCount = await Like.count({ where: { PostId: postId } })

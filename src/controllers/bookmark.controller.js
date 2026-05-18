@@ -1,4 +1,5 @@
 const { Post, PostImage, User, Tag, Like, Bookmark } = require('../models')
+const notificationService = require('../services/notificationService')
 
 // 🔖 Toggle Bookmark (Guardar/Quitar de favoritos)
 exports.toggleBookmark = async (req, res) => {
@@ -22,6 +23,14 @@ exports.toggleBookmark = async (req, res) => {
     } else {
       await Bookmark.create({ PostId: postId, UserId: userId })
       saved = true
+
+      // 🔔 Notificar al autor
+      await notificationService.createNotification({
+        receiverId: post.UserId,
+        actorId: userId,
+        type: 'PUBLICATION_INTERESTED',
+        relatedId: postId
+      })
     }
 
     const saveCount = await Bookmark.count({ where: { PostId: postId } })

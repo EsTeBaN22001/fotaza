@@ -1,4 +1,5 @@
-const { Report, Post, PostImage, Comment, User, Notification } = require('../models')
+const { Report, Post, PostImage, Comment, User } = require('../models')
+const notificationService = require('../services/notificationService')
 const { Op } = require('sequelize')
 const sequelize = require('../config/db')
 
@@ -107,14 +108,12 @@ exports.resolveReport = async (req, res) => {
         await post.save({ transaction })
         targetOwnerId = post.UserId
 
-        if (Notification) {
-          await Notification.create({
-            UserId: targetOwnerId,
-            type: 'post_removed',
-            message: 'Una de tus publicaciones ha sido eliminada por incumplir las normas.',
-            relatedId: postId
-          }, { transaction })
-        }
+        await notificationService.createNotification({
+          receiverId: targetOwnerId,
+          type: 'PUBLICATION_REMOVED',
+          message: 'Una de tus publicaciones ha sido eliminada por incumplir las normas.',
+          relatedId: postId
+        })
       }
     } else if (report.targetType === 'comment') {
       const comment = await Comment.findByPk(report.targetId, { transaction })
@@ -122,14 +121,12 @@ exports.resolveReport = async (req, res) => {
         targetOwnerId = comment.UserId
         await comment.destroy({ transaction }) // O marcar como eliminado logicamente
         
-        if (Notification) {
-          await Notification.create({
-            UserId: targetOwnerId,
-            type: 'comment_removed',
-            message: 'Un comentario tuyo fue eliminado por un moderador.',
-            relatedId: report.targetId
-          }, { transaction })
-        }
+        await notificationService.createNotification({
+          receiverId: targetOwnerId,
+          type: 'COMMENT_REMOVED',
+          message: 'Un comentario tuyo fue eliminado por un moderador.',
+          relatedId: report.targetId
+        })
       }
     }
 
@@ -146,13 +143,11 @@ exports.resolveReport = async (req, res) => {
           user.active = false
           await user.save({ transaction })
 
-          if (Notification) {
-            await Notification.create({
-              UserId: targetOwnerId,
-              type: 'account_suspended',
-              message: 'Tu cuenta ha sido suspendida por acumular múltiples faltas a las normas.'
-            }, { transaction })
-          }
+          await notificationService.createNotification({
+            receiverId: targetOwnerId,
+            type: 'ACCOUNT_SUSPENDED',
+            message: 'Tu cuenta ha sido suspendida por acumular múltiples faltas a las normas.'
+          })
         }
       }
     }

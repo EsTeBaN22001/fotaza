@@ -5,7 +5,9 @@ const Notification = sequelize.define(
   'Notification',
   {
     type: DataTypes.STRING,
-    is_read: DataTypes.BOOLEAN
+    message: { type: DataTypes.STRING, allowNull: true },
+    relatedId: { type: DataTypes.INTEGER, allowNull: true },
+    is_read: { type: DataTypes.BOOLEAN, defaultValue: false }
   },
   {
     tableName: 'notifications',

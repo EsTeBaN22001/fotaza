@@ -1,4 +1,5 @@
-const { Report, Post, PostImage, Comment, Notification } = require('../models')
+const { Report, Post, PostImage, Comment } = require('../models')
+const notificationService = require('../services/notificationService')
 const { Op } = require('sequelize')
 
 exports.createReport = async (req, res) => {
@@ -85,24 +86,20 @@ exports.createReport = async (req, res) => {
         await post.save()
 
         // Notificar al autor
-        if (Notification) {
-          await Notification.create({
-            UserId: targetOwnerId,
-            type: 'post_under_review',
-            message: 'Una de tus publicaciones ha entrado en revisión debido a múltiples denuncias.',
-            relatedId: targetPostId
-          })
-        }
+        await notificationService.createNotification({
+          receiverId: targetOwnerId,
+          type: 'POST_UNDER_REVIEW',
+          message: 'Una de tus publicaciones ha entrado en revisión debido a múltiples denuncias.',
+          relatedId: targetPostId
+        })
       }
     } else if (targetType === 'comment') {
-       if (Notification) {
-          await Notification.create({
-            UserId: targetOwnerId, // Notifica al autor del comentario
-            type: 'comment_reported',
-            message: 'Un comentario tuyo ha sido reportado.',
-            relatedId: targetId
-          })
-        }
+       await notificationService.createNotification({
+         receiverId: targetOwnerId, // Notifica al autor del comentario
+         type: 'COMMENT_REPORTED',
+         message: 'Un comentario tuyo ha sido reportado.',
+         relatedId: targetId
+       })
     }
 
     res.status(201).json({ message: 'Denuncia enviada correctamente', success: true })

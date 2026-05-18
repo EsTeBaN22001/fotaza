@@ -339,23 +339,34 @@ async function seed() {
   console.log('\n🔔 Creando notificaciones...')
 
   await Notification.create({
-    type: 'new_follower',
+    type: 'USER_FOLLOWED',
     UserId: esteban.id,
+    actorId: marcos.id,
+    message: 'ha comenzado a seguirte.',
     is_read: false
   })
   await Notification.create({
-    type: 'new_follower',
+    type: 'COMMENT_CREATED',
     UserId: esteban.id,
+    actorId: lucia.id,
+    relatedId: post1.id,
+    message: 'ha comentado tu publicación.',
     is_read: false
   })
   await Notification.create({
-    type: 'new_follower',
+    type: 'POST_LIKED',
     UserId: esteban.id,
+    actorId: ana.id,
+    relatedId: post1.id,
+    message: 'le ha gustado tu publicación.',
     is_read: true
   })
   await Notification.create({
-    type: 'new_follower',
+    type: 'PUBLICATION_INTERESTED',
     UserId: lucia.id,
+    actorId: marcos.id,
+    relatedId: post4.id,
+    message: 'ha guardado tu publicación.',
     is_read: false
   })
 

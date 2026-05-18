@@ -1,4 +1,5 @@
 const { Post, PostImage, User, Follow, Tag, Like, Bookmark } = require('../models')
+const notificationService = require('../services/notificationService')
 
 exports.getMyPosts = async (req, res) => {
   try {
@@ -149,12 +150,10 @@ exports.toggleFollow = async (req, res) => {
       message = `Ahora+sigues+a+${target.username}`
 
       // 🔔 Notificación (Requisito 5)
-      await Notification.create({
-        user_id: target.id,
-        actor_id: req.user.id,
-        type: 'new_follower',
-        message: `@${req.user.username} comenzó a seguirte`,
-        is_read: false
+      await notificationService.createNotification({
+        receiverId: target.id,
+        actorId: req.user.id,
+        type: 'USER_FOLLOWED'
       })
     }
 
