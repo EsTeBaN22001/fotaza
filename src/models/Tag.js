@@ -10,7 +10,13 @@ const Tag = sequelize.define(
     tableName: 'tags',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      {
+        name: 'idx_tags_name',
+        fields: ['name']
+      }
+    ]
   }
 )
 

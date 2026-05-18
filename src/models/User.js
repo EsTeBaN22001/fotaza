@@ -20,7 +20,17 @@ const User = sequelize.define(
     tableName: 'users',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      {
+        name: 'idx_users_username',
+        fields: ['username']
+      },
+      {
+        name: 'idx_users_active',
+        fields: ['active']
+      }
+    ]
   }
 )
 

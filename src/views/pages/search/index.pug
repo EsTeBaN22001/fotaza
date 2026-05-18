@@ -1,0 +1,372 @@
+extends ../../layouts/app
+
+block content
+  .container.mb-5
+    // Header
+    .d-flex.flex-column.flex-md-row.justify-content-between.align-items-start.align-items-md-center.mb-4.gap-3
+      div
+        h2.fw-bold.mb-1 🔍 Motor de Búsqueda
+        p.text-muted.mb-0 Encuentra la mejor fotografía y creadores en la comunidad.
+      
+      // Tabs
+      .btn-group(role="group" aria-label="Búsqueda de categorías")
+        a.btn(href=`/search?tab=posts&q=${q || ''}${filters.order_by ? '&order_by=' + filters.order_by : ''}` class=activeTab === 'posts' ? 'btn-primary' : 'btn-outline-primary')
+          i.bi.bi-images.me-2
+          | Publicaciones
+        a.btn(href=`/search?tab=users&q=${q || ''}` class=activeTab === 'users' ? 'btn-primary' : 'btn-outline-primary')
+          i.bi.bi-people.me-2
+          | Usuarios
+
+    // Main Row
+    .row.g-4
+      // Posts Search Tab
+      if activeTab === 'posts'
+        // Filters Sidebar (Left Column)
+        .col-lg-3
+          .card.shadow-sm.border-0.sticky-top(style="top: 20px; z-index: 100;")
+            .card-header.bg-white.py-3.border-bottom
+              h6.fw-bold.mb-0
+                i.bi.bi-sliders.me-2.text-primary
+                | Filtros Avanzados
+            
+            .card-body
+              form(action="/search" method="GET")
+                input(type="hidden" name="tab" value="posts")
+                if q
+                  input(type="hidden" name="q" value=q)
+
+                // Author
+                .mb-3
+                  label.form-label.small.fw-bold.text-muted(for="filterAuthor") Autor
+                  .input-group.input-group-sm
+                    span.input-group-text.bg-light @
+                    input.form-control#filterAuthor(
+                      type="text"
+                      name="author"
+                      placeholder="username"
+                      value=filters.author || ''
+                    )
+
+                // Image License
+                .mb-3
+                  label.form-label.small.fw-bold.text-muted Licencia de Imagen
+                  select.form-select.form-select-sm(name="license")
+                    option(value="") Todas las licencias
+                    option(value="copyright" selected=filters.license === 'copyright') Copyright Reservado
+                    option(value="free" selected=filters.license === 'free') Licencia Libre
+
+                // Comments enabled
+                .mb-3
+                  label.form-label.small.fw-bold.text-muted Comentarios
+                  select.form-select.form-select-sm(name="comments")
+                    option(value="") Todos
+                    option(value="enabled" selected=filters.comments === 'enabled') Habilitados
+                    option(value="disabled" selected=filters.comments === 'disabled') Deshabilitados
+
+                // Date range
+                .mb-3
+                  label.form-label.small.fw-bold.text-muted Rango de Fechas
+                  .d-flex.flex-column.gap-2
+                    .input-group.input-group-sm
+                      span.input-group-text.bg-light Desde
+                      input.form-control(
+                        type="date"
+                        name="date_from"
+                        value=filters.date_from || ''
+                      )
+                    .input-group.input-group-sm
+                      span.input-group-text.bg-light Hasta
+                      input.form-control(
+                        type="date"
+                        name="date_to"
+                        value=filters.date_to || ''
+                      )
+
+                // Tags multiselect
+                if allTags && allTags.length > 0
+                  .mb-4
+                    label.form-label.small.fw-bold.text-muted.d-block Etiquetas
+                    .d-flex.flex-wrap.gap-1(style="max-height: 180px; overflow-y: auto; padding: 5px; border: 1px solid #dee2e6; rounded: 4px;")
+                      each tag in allTags
+                        - const isSelected = selectedTags && selectedTags.includes(tag.name.toLowerCase())
+                        input.btn-check(
+                          type="checkbox"
+                          name="tags"
+                          value=tag.name
+                          id=`tag-check-${tag.id}`
+                          checked=isSelected
+                        )
+                        label.btn.btn-outline-primary.btn-sm.px-2.py-0.rounded-pill.small(
+                          for=`tag-check-${tag.id}`
+                          style="font-size: 0.75rem; margin-bottom: 2px;"
+                        )= tag.name
+
+                // Buttons
+                .d-grid.gap-2
+                  button.btn.btn-primary.btn-sm(type="submit")
+                    i.bi.bi-funnel-fill.me-1
+                    | Aplicar Filtros
+                  a.btn.btn-outline-secondary.btn-sm(href=`/search?tab=posts&q=${q || ''}`)
+                    i.bi.bi-arrow-counterclockwise.me-1
+                    | Limpiar Todo
+
+        // Results Content (Right Column)
+        .col-lg-9
+          // Active Filters & Sorting
+          .card.shadow-sm.border-0.mb-4
+            .card-body.p-3
+              .d-flex.flex-column.flex-md-row.justify-content-between.align-items-start.align-items-md-center.gap-3
+                div.small
+                  span.fw-bold Resultados: 
+                  span.badge.bg-dark.me-2= pagination.total
+                  if q
+                    span.text-muted.me-2 para 
+                    strong.text-primary.me-2 "#{q}"
+                  
+                  // Active badges
+                  if selectedTags && selectedTags.length > 0
+                    each st in selectedTags
+                      span.badge.bg-primary.rounded-pill.me-1= st
+                  if filters.author
+                    span.badge.bg-secondary.me-1 @#{filters.author}
+                  if filters.license
+                    span.badge.bg-info.me-1 Licencia: #{filters.license}
+
+                // Sorting control
+                form.d-flex.align-items-center.gap-2(action="/search" method="GET" id="sortingForm")
+                  input(type="hidden" name="tab" value="posts")
+                  if q
+                    input(type="hidden" name="q" value=q)
+                  if filters.author
+                    input(type="hidden" name="author" value=filters.author)
+                  if filters.license
+                    input(type="hidden" name="license" value=filters.license)
+                  if filters.comments
+                    input(type="hidden" name="comments" value=filters.comments)
+                  if filters.date_from
+                    input(type="hidden" name="date_from" value=filters.date_from)
+                  if filters.date_to
+                    input(type="hidden" name="date_to" value=filters.date_to)
+                  if selectedTags && selectedTags.length > 0
+                    each st in selectedTags
+                      input(type="hidden" name="tags" value=st)
+
+                  label.small.text-nowrap.fw-bold.text-muted(for="sortBy") Ordenar por:
+                  select.form-select.form-select-sm#sortBy(name="order_by" onchange="document.getElementById('sortingForm').submit()")
+                    option(value="recent" selected=filters.order_by === 'recent') Más recientes
+                    option(value="old" selected=filters.order_by === 'old') Más antiguas
+                    option(value="top_rated" selected=filters.order_by === 'top_rated') Mejor valoradas
+                    option(value="most_liked" selected=filters.order_by === 'most_liked') Más populares (Likes)
+                    option(value="most_commented" selected=filters.order_by === 'most_commented') Más comentadas
+                    option(value="most_saved" selected=filters.order_by === 'most_saved') Más guardadas
+                    option(value="trending" selected=filters.order_by === 'trending') Tendencia 🔥
+                    if q
+                      option(value="relevance" selected=filters.order_by === 'relevance') Relevancia 🎯
+
+          // Posts Grid
+          if !posts || posts.length === 0
+            // Empty State
+            .card.shadow-sm.border-0.py-5.my-4
+              .card-body.text-center
+                .display-1.mb-3 📷
+                h4.fw-bold.mb-2 No encontramos publicaciones
+                p.text-muted.mb-4 Prueba buscando otra cosa o cambiando la combinación de los filtros avanzados.
+                a.btn.btn-primary(href="/search?tab=posts")
+                  i.bi.bi-arrow-counterclockwise.me-2
+                  | Restablecer Búsqueda
+          else
+            .row
+              each post in posts
+                .col-md-6.col-xl-4.mb-4
+                  .card.shadow-sm.h-100
+                    // Image Carousels or single image
+                    if post.images.length === 1
+                      a(href=`/posts/${post.id}`)
+                        img.card-img-top(
+                          src=post.images[0].url
+                          alt=post.title
+                          style="height: 220px; object-fit: cover;"
+                          loading="lazy"
+                        )
+                    else if post.images.length > 1
+                      - const carouselId = 'carousel-search-' + post.id
+                      .carousel.slide(id=carouselId data-bs-ride="carousel")
+                        .carousel-inner
+                          each img, index in post.images
+                            .carousel-item(class=index === 0 ? 'active' : '')
+                              a(href=`/posts/${post.id}`)
+                                img.d-block.w-100(
+                                  src=img.url
+                                  alt=post.title
+                                  style="height: 220px; object-fit: cover;"
+                                  loading="lazy"
+                                )
+                        button.carousel-control-prev(
+                          type="button"
+                          data-bs-target='#' + carouselId
+                          data-bs-slide="prev"
+                        )
+                          span.carousel-control-prev-icon
+                        button.carousel-control-next(
+                          type="button"
+                          data-bs-target='#' + carouselId
+                          data-bs-slide="next"
+                        )
+                          span.carousel-control-next-icon
+                    else
+                      a(href=`/posts/${post.id}`)
+                        img.card-img-top(
+                          src="/placeholder.svg"
+                          alt="Sin imagen"
+                          style="height: 220px; object-fit: cover;"
+                        )
+
+                    .card-body.d-flex.flex-column
+                      h6.card-title.fw-bold.mb-1
+                        a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
+                      
+                      p.card-text.text-muted.small.mb-2= post.description && post.description.length > 80 ? post.description.substring(0, 80) + '...' : (post.description || '')
+
+                      // Actions Block
+                      .d-flex.align-items-center.gap-3.mb-2
+                        - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
+                        - const likeCount = post.Likes ? post.Likes.length : 0
+                        if user
+                          button.btn.btn-link.p-0.text-decoration-none.like-btn.small(
+                            class=isLiked ? 'text-danger' : 'text-muted'
+                            data-post-id=post.id
+                            aria-label=isLiked ? 'Quitar me gusta' : 'Dar me gusta'
+                          )
+                            i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
+                            span.like-count= likeCount
+                            |  me gusta
+                        else
+                          span.text-muted.small(title="Inicia sesión para dar me gusta")
+                            i.bi.bi-heart.me-1
+                            span.like-count= likeCount
+                            |  me gusta
+
+                        - const isSaved = user && post.Bookmarks && post.Bookmarks.some(b => b.UserId === user.id)
+                        if user
+                          button.btn.btn-link.p-0.text-decoration-none.save-btn.small(
+                            class=isSaved ? 'text-primary' : 'text-muted'
+                            data-post-id=post.id
+                            aria-label=isSaved ? 'Quitar de guardados' : 'Guardar'
+                          )
+                            i.bi(class=isSaved ? 'bi-bookmark-fill' : 'bi-bookmark')
+                        else
+                          span.text-muted.small
+                            i.bi.bi-bookmark
+
+                      // Tags badges
+                      if post.Tags && post.Tags.length > 0
+                        .d-flex.flex-wrap.gap-1.mb-3
+                          each tag in post.Tags
+                            a.badge.rounded-pill.bg-light.text-primary.border.small.text-decoration-none(href=`/search?tags=${tag.name}`)= tag.name
+
+                      .flex-grow-1
+
+                      // Creator/Date footer
+                      .border-top.pt-2.mt-2.d-flex.justify-content-between.align-items-center
+                        small.text-muted
+                          | Por 
+                          if post.User && post.User.username
+                            if user
+                              a.text-decoration-none.fw-bold(href=`/profile/${post.User.username}`)= post.User.username
+                            else
+                              span.fw-bold= post.User.username
+                          else
+                            | Anónimo
+                        
+                        small.text-muted= new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+
+            // Pagination Controls
+            if pagination.totalPages > 1
+              nav.mt-4(aria-label="Páginas de resultados")
+                ul.pagination.justify-content-center
+                  li.page-item(class=!pagination.hasPrev ? 'disabled' : '')
+                    - const prevPageUrl = `/search?tab=posts&page=${pagination.page - 1}${q ? '&q=' + q : ''}${filters.author ? '&author=' + filters.author : ''}${filters.license ? '&license=' + filters.license : ''}${filters.comments ? '&comments=' + filters.comments : ''}${filters.date_from ? '&date_from=' + filters.date_from : ''}${filters.date_to ? '&date_to=' + filters.date_to : ''}${filters.order_by ? '&order_by=' + filters.order_by : ''}${selectedTags && selectedTags.length > 0 ? '&tags=' + selectedTags.join(',') : ''}`
+                    a.page-link(href=prevPageUrl) Anterior
+
+                  each pageNum in Array.from({length: pagination.totalPages}, (_, i) => i + 1)
+                    - const pageUrl = `/search?tab=posts&page=${pageNum}${q ? '&q=' + q : ''}${filters.author ? '&author=' + filters.author : ''}${filters.license ? '&license=' + filters.license : ''}${filters.comments ? '&comments=' + filters.comments : ''}${filters.date_from ? '&date_from=' + filters.date_from : ''}${filters.date_to ? '&date_to=' + filters.date_to : ''}${filters.order_by ? '&order_by=' + filters.order_by : ''}${selectedTags && selectedTags.length > 0 ? '&tags=' + selectedTags.join(',') : ''}`
+                    li.page-item(class=pageNum === pagination.page ? 'active' : '')
+                      a.page-link(href=pageUrl)= pageNum
+
+                  li.page-item(class=!pagination.hasNext ? 'disabled' : '')
+                    - const nextPageUrl = `/search?tab=posts&page=${pagination.page + 1}${q ? '&q=' + q : ''}${filters.author ? '&author=' + filters.author : ''}${filters.license ? '&license=' + filters.license : ''}${filters.comments ? '&comments=' + filters.comments : ''}${filters.date_from ? '&date_from=' + filters.date_from : ''}${filters.date_to ? '&date_to=' + filters.date_to : ''}${filters.order_by ? '&order_by=' + filters.order_by : ''}${selectedTags && selectedTags.length > 0 ? '&tags=' + selectedTags.join(',') : ''}`
+                    a.page-link(href=nextPageUrl) Siguiente
+      else if activeTab === 'users'
+        .col-12
+          if !users || users.length === 0
+            // Empty State
+            .card.shadow-sm.border-0.py-5
+              .card-body.text-center
+                .display-1.mb-3 👤
+                h4.fw-bold.mb-2 No encontramos usuarios
+                p.text-muted.mb-4 No se encontraron perfiles con el término "#{q}". Prueba con otro nombre de usuario.
+                a.btn.btn-primary(href="/search?tab=users")
+                  i.bi.bi-arrow-counterclockwise.me-2
+                  | Ver todos
+          else
+            .row.row-cols-1.row-cols-md-2.row-cols-lg-3.g-4
+              each profile in users
+                .col
+                  .card.shadow-sm.h-100.border-0
+                    .card-body.p-4.text-center
+                      .bg-light.rounded-circle.d-flex.align-items-center.justify-content-center.mx-auto.mb-3(style="width: 80px; height: 80px;")
+                        i.bi.bi-person.text-muted(style="font-size: 2.5rem;")
+                      
+                      h5.fw-bold.mb-1
+                        if user
+                          a.text-decoration-none.text-dark(href=`/profile/${profile.username}`)= profile.username
+                        else
+                          span.fw-bold.text-dark= profile.username
+                      
+                      span.badge.bg-light.text-secondary.border.mb-3= profile.role === 'validator' ? 'Validador' : 'Fotógrafo'
+
+                      .row.text-center.g-1.mb-3.border-top.border-bottom.py-2
+                        .col-6
+                          span.fw-bold.d-block.small= profile.followerCount
+                          small.text-muted.x-small Seguidores
+                        .col-6
+                          span.fw-bold.d-block.small= profile.followingCount
+                          small.text-muted.x-small Siguiendo
+                      
+                      .d-grid
+                        if user
+                          if profile.isSelf
+                            a.btn.btn-outline-primary.btn-sm(href=`/profile/${profile.username}`)
+                              i.bi.bi-person-circle.me-1
+                              | Mi Perfil
+                          else
+                            form(method="POST" action=`/profile/${profile.username}/follow`)
+                              if profile.isFollowing
+                                button.btn.btn-outline-danger.btn-sm.w-100(type="submit")
+                                  i.bi.bi-person-dash.me-1
+                                  | Dejar de seguir
+                              else
+                                button.btn.btn-primary.btn-sm.w-100(type="submit")
+                                  i.bi.bi-person-plus.me-1
+                                  | Seguir
+                        else
+                          span.text-muted.small(title="Inicia sesión para interactuar")
+                            i.bi.bi-lock.me-1
+                            | Inicia sesión para seguir
+
+            // Users Pagination Controls
+            if pagination.totalPages > 1
+              nav.mt-4(aria-label="Páginas de usuarios")
+                ul.pagination.justify-content-center
+                  li.page-item(class=!pagination.hasPrev ? 'disabled' : '')
+                    a.page-link(href=`/search?tab=users&page=${pagination.page - 1}${q ? '&q=' + q : ''}`) Anterior
+
+                  each pageNum in Array.from({length: pagination.totalPages}, (_, i) => i + 1)
+                    li.page-item(class=pageNum === pagination.page ? 'active' : '')
+                      a.page-link(href=`/search?tab=users&page=${pageNum}${q ? '&q=' + q : ''}`)= pageNum
+
+                  li.page-item(class=!pagination.hasNext ? 'disabled' : '')
+                    a.page-link(href=`/search?tab=users&page=${pagination.page + 1}${q ? '&q=' + q : ''}`) Siguiente
+
+  script(src="/js/likes.js")
+  script(src="/js/bookmarks.js")

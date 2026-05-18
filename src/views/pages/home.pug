@@ -125,7 +125,7 @@ block content
               if post.Tags && post.Tags.length > 0
                 .d-flex.flex-wrap.gap-1.mb-3
                   each tag in post.Tags
-                    span.badge.rounded-pill.bg-light.text-primary.border.small= tag.name
+                    a.badge.rounded-pill.bg-light.text-primary.border.small.text-decoration-none(href=`/search?tags=${tag.name}`)= tag.name
               
               .flex-grow-1
               

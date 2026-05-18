@@ -1,0 +1,239 @@
+extends ../../layouts/app
+
+block content
+  .container.mb-5
+    // Header
+    .text-center.py-4.mb-5.bg-dark.text-light.rounded-4.shadow-sm.position-relative.overflow-hidden
+      .position-absolute.top-0.start-0.w-100.h-100(style="background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(0,0,0,0) 80%);")
+      h1.fw-bold.mb-2 🧭 Descubre y Explora
+      p.lead.text-muted.mb-0 Los creadores más talentosos, etiquetas del momento y las imágenes mejor valoradas.
+
+    // 1. TOP rated content / Obras maestras
+    if popularPosts && popularPosts.length > 0
+      .mb-5
+        h4.fw-bold.mb-3
+          i.bi.bi-star-fill.text-warning.me-2
+          | Obras Maestras Mejor Valoradas
+        
+        .row.row-cols-1.row-cols-md-2.row-cols-lg-3.g-4
+          each post in popularPosts
+            .col
+              .card.shadow-sm.h-100.border-0.position-relative.overflow-hidden.card-explore
+                if post.images && post.images.length > 0
+                  img.w-100(
+                    src=post.images[0].url
+                    alt=post.title
+                    style="height: 280px; object-fit: cover;"
+                    loading="lazy"
+                  )
+                
+                .card-img-overlay.d-flex.flex-column.justify-content-end.p-3(style="background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, rgba(0,0,0,0) 100%);")
+                  h5.card-title.text-white.fw-bold.mb-1
+                    a.text-white.text-decoration-none(href=`/posts/${post.id}`)= post.title
+                  
+                  p.card-text.text-light.small.opacity-75.mb-2.text-truncate= post.description || ''
+                  
+                  .d-flex.justify-content-between.align-items-center
+                    small.text-white-50
+                      | Por 
+                      strong= post.User ? post.User.username : 'Anónimo'
+                    
+                    span.badge.bg-warning.text-dark
+                      i.bi.bi-star-fill.me-1
+                      | Destacado
+
+    // 2. Row: Trending Tags & Featured Creators
+    .row.g-4.mb-5
+      // Popular Tags
+      .col-md-6
+        .card.shadow-sm.border-0.h-100
+          .card-header.bg-white.py-3.border-bottom
+            h5.fw-bold.mb-0.small-title
+              i.bi.bi-fire.text-danger.me-2
+              | Etiquetas del Momento
+          
+          .card-body.p-4
+            if !trendingTags || trendingTags.length === 0
+              p.text-muted Sin etiquetas populares en este momento.
+            else
+              .d-flex.flex-wrap.gap-2
+                each tag in trendingTags
+                  a.btn.btn-outline-primary.btn-sm.rounded-pill.px-3.py-1.d-inline-flex.align-items-center(href=`/search?tags=${tag.name}`)
+                    i.bi.bi-tag-fill.me-1.small
+                    span.fw-bold= tag.name
+                    span.badge.bg-light.text-primary.ms-2.small= tag.getDataValue('postCount')
+
+      // Featured Creators
+      .col-md-6
+        .card.shadow-sm.border-0.h-100
+          .card-header.bg-white.py-3.border-bottom
+            h5.fw-bold.mb-0.small-title
+              i.bi.bi-person-hearts.text-primary.me-2
+              | Fotógrafos Recomendados
+          
+          .card-body.p-3
+            if !featuredCreators || featuredCreators.length === 0
+              p.text-muted Sin creadores recomendados.
+            else
+              .d-flex.flex-column.gap-3
+                each creator in featuredCreators
+                  .d-flex.align-items-center.justify-content-between.p-2.rounded-3.bg-light
+                    .d-flex.align-items-center.gap-3
+                      .bg-secondary.rounded-circle.d-flex.align-items-center.justify-content-center(style="width: 44px; height: 44px;")
+                        i.bi.bi-person.text-white(style="font-size: 1.3rem;")
+                      div
+                        a.fw-bold.text-dark.text-decoration-none.small(href=`/profile/${creator.username}`)= creator.username
+                        small.d-block.text-muted.x-small #{creator.followerCount} seguidores
+                    
+                    if user
+                      if creator.isSelf
+                        span.badge.bg-secondary.small Tú
+                      else
+                        form.m-0(method="POST" action=`/profile/${creator.username}/follow`)
+                          if creator.isFollowing
+                            button.btn.btn-outline-danger.btn-sm.px-3(type="submit" style="font-size: 0.8rem;") Dejar de seguir
+                          else
+                            button.btn.btn-primary.btn-sm.px-3(type="submit" style="font-size: 0.8rem;") Seguir
+                    else
+                      span.text-muted.small(title="Inicia sesión para seguir")
+                        i.bi.bi-lock
+
+    // 3. Network posts / Mis Seguidos (if logged in)
+    if user && followedPosts && followedPosts.length > 0
+      .mb-5
+        h4.fw-bold.mb-3
+          i.bi.bi-people-fill.text-info.me-2
+          | De la gente que sigues
+        
+        .row.row-cols-2.row-cols-md-3.row-cols-lg-6.g-3
+          each post in followedPosts
+            .col
+              .card.shadow-sm.h-100.border-0.position-relative
+                if post.images && post.images.length > 0
+                  a(href=`/posts/${post.id}`)
+                    img.card-img-top.rounded-3(
+                      src=post.images[0].url
+                      alt=post.title
+                      style="height: 140px; object-fit: cover;"
+                      loading="lazy"
+                    )
+                .p-1.text-center
+                  a.fw-bold.x-small.text-decoration-none.text-truncate.d-block(href=`/profile/${post.User.username}`)= post.User.username
+
+    // 4. Mix Discovery Grid
+    .mb-5
+      h4.fw-bold.mb-3
+        i.bi.bi-compass.text-primary.me-2
+        | Descubrimiento General
+      
+      if !recentPosts || recentPosts.length === 0
+        .text-center.py-5.text-muted
+          p No hay publicaciones disponibles.
+      else
+        .row.g-4
+          each post in recentPosts
+            .col-md-4.col-sm-6
+              .card.shadow-sm.h-100
+                if post.images.length === 1
+                  a(href=`/posts/${post.id}`)
+                    img.card-img-top(
+                      src=post.images[0].url
+                      alt=post.title
+                      style="height: 220px; object-fit: cover;"
+                      loading="lazy"
+                    )
+                else if post.images.length > 1
+                  - const carouselId = 'carousel-explore-mix-' + post.id
+                  .carousel.slide(id=carouselId data-bs-ride="carousel")
+                    .carousel-inner
+                      each img, index in post.images
+                        .carousel-item(class=index === 0 ? 'active' : '')
+                          a(href=`/posts/${post.id}`)
+                            img.d-block.w-100(
+                              src=img.url
+                              alt=post.title
+                              style="height: 220px; object-fit: cover;"
+                              loading="lazy"
+                            )
+                    button.carousel-control-prev(type="button" data-bs-target='#' + carouselId data-bs-slide="prev")
+                      span.carousel-control-prev-icon
+                    button.carousel-control-next(type="button" data-bs-target='#' + carouselId data-bs-slide="next")
+                      span.carousel-control-next-icon
+                else
+                  a(href=`/posts/${post.id}`)
+                    img.card-img-top(
+                      src="/placeholder.svg"
+                      alt="Sin imagen"
+                      style="height: 220px; object-fit: cover;"
+                    )
+
+                .card-body.d-flex.flex-column
+                  h6.card-title.fw-bold.mb-1
+                    a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
+                  
+                  p.card-text.text-muted.small.mb-2= post.description && post.description.length > 80 ? post.description.substring(0, 80) + '...' : (post.description || '')
+
+                  // Actions block
+                  .d-flex.align-items-center.gap-3.mb-2
+                    - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
+                    - const likeCount = post.Likes ? post.Likes.length : 0
+                    if user
+                      button.btn.btn-link.p-0.text-decoration-none.like-btn.small(
+                        class=isLiked ? 'text-danger' : 'text-muted'
+                        data-post-id=post.id
+                        aria-label=isLiked ? 'Quitar me gusta' : 'Dar me gusta'
+                      )
+                        i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
+                        span.like-count= likeCount
+                    else
+                      span.text-muted.small
+                        i.bi.bi-heart.me-1
+                        span.like-count= likeCount
+
+                    - const isSaved = user && post.Bookmarks && post.Bookmarks.some(b => b.UserId === user.id)
+                    if user
+                      button.btn.btn-link.p-0.text-decoration-none.save-btn.small(
+                        class=isSaved ? 'text-primary' : 'text-muted'
+                        data-post-id=post.id
+                        aria-label=isSaved ? 'Quitar de guardados' : 'Guardar'
+                      )
+                        i.bi(class=isSaved ? 'bi-bookmark-fill' : 'bi-bookmark')
+                    else
+                      span.text-muted.small
+                        i.bi.bi-bookmark
+
+                  // Tags
+                  if post.Tags && post.Tags.length > 0
+                    .d-flex.flex-wrap.gap-1.mb-3
+                      each tag in post.Tags
+                        a.badge.rounded-pill.bg-light.text-primary.border.small.text-decoration-none(href=`/search?tags=${tag.name}`)= tag.name
+
+                  .flex-grow-1
+
+                  // Footer
+                  .border-top.pt-2.mt-2.d-flex.justify-content-between.align-items-center
+                    small.text-muted
+                      | Por 
+                      if post.User && post.User.username
+                        if user
+                          a.text-decoration-none.fw-bold(href=`/profile/${post.User.username}`)= post.User.username
+                        else
+                          span.fw-bold= post.User.username
+                      else
+                        | Anónimo
+                    
+                    small.text-muted= new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+
+  style.
+    .card-explore {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card-explore:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.15) !important;
+    }
+    .x-small { font-size: 0.78rem; }
+    .small-title { font-size: 1.05rem; }
+
+  script(src="/js/likes.js")
+  script(src="/js/bookmarks.js")

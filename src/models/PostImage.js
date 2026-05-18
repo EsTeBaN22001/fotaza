@@ -12,7 +12,13 @@ const PostImage = sequelize.define(
     tableName: 'images',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      {
+        name: 'idx_images_license',
+        fields: ['license']
+      }
+    ]
   }
 )
 

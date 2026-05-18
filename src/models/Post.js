@@ -21,7 +21,21 @@ const Post = sequelize.define(
     tableName: 'posts',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: 'updated_at'
+    updatedAt: 'updated_at',
+    indexes: [
+      {
+        name: 'idx_posts_status',
+        fields: ['status']
+      },
+      {
+        name: 'idx_posts_user_id',
+        fields: ['UserId']
+      },
+      {
+        name: 'idx_posts_created_at',
+        fields: ['created_at']
+      }
+    ]
   }
 )
 

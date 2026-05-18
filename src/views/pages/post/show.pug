@@ -90,7 +90,7 @@ block content
               .mb-4
                 .d-flex.flex-wrap.gap-2
                   each tag in post.Tags
-                    span.badge.rounded-pill.bg-primary.bg-opacity-10.text-primary.px-3.py-2.small
+                    a.badge.rounded-pill.bg-primary.bg-opacity-10.text-primary.px-3.py-2.small.text-decoration-none(href=`/search?tags=${tag.name}`)
                       i.bi.bi-tag.me-1
                       = tag.name
 
