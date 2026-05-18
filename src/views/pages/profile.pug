@@ -26,7 +26,6 @@ block content
                 p.card-text.text-truncate= post.description
                 small.text-muted= new Date(post.created_at).toLocaleDateString('es-ES')
                 
-                //- Likes
                 .mt-2
                   - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
                   - const likeCount = post.Likes ? post.Likes.length : 0

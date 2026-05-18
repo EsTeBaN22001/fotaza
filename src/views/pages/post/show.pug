@@ -3,15 +3,12 @@ extends ../../layouts/app
 block content
   .container.mt-4.mb-5
 
-    //- ===== NAVEGACIÓN =====
     .mb-3
       a.text-decoration-none.text-muted(href="/home")
         i.bi.bi-arrow-left.me-1
         | Volver al inicio
 
-    //- ===== LAYOUT BALANCEADO =====
     .row.g-4.align-items-center
-      //- 📸 COLUMNA IZQUIERDA: IMÁGENES (CENTRADA VERTICALMENTE)
       .col-lg-8
         .post-media-container.bg-dark.rounded-3.overflow-hidden.shadow-sm(style="min-height: 400px; max-height: 80vh; display: flex; align-items: center; justify-content: center;")
           if post.images && post.images.length > 0
@@ -44,9 +41,7 @@ block content
               i.bi.bi-image.d-block(style="font-size: 3rem;")
               span Sin imágenes
 
-      //- 📝 COLUMNA DERECHA: INFO Y COMENTARIOS (CRECE NATURALMENTE)
       .col-lg-4
-        //- TARJETA DE INFORMACIÓN
         .card.shadow-sm.border-0.mb-4
           .card-body.p-4
             h1.h4.fw-bold.mb-3= post.title
@@ -87,7 +82,6 @@ block content
                         i.bi.bi-flag.me-2
                         | Denunciar
 
-
             if post.description
               .mb-4
                 p.mb-0(style="white-space: pre-wrap; line-height: 1.6; font-size: 0.95rem;")= post.description
@@ -121,7 +115,6 @@ block content
                 )
                   i.bi(class=isSaved ? 'bi-bookmark-fill' : 'bi-bookmark')
 
-        //- SECCIÓN DE COMENTARIOS
         .card.shadow-sm.border-0.mb-4
           .card-body.p-4
             h6.fw-bold.mb-4
@@ -181,7 +174,6 @@ block content
       }
     }
 
-  //- MODAL DE DENUNCIA
   .modal.fade#reportModal(tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true")
     .modal-dialog
       .modal-content

@@ -16,7 +16,6 @@ const {
   Report
 } = require('../src/models')
 
-// Rutas de imágenes del seed (ya incluidas en el repo como WebP)
 const IMG = {
   sunset: '/uploads/seed_landscape_sunset.webp',
   butterfly: '/uploads/seed_butterfly_macro.webp',
@@ -30,14 +29,10 @@ const IMG = {
 async function seed() {
   console.log('🌱 Iniciando seed...\n')
 
-  // Desactivar FK checks y recrear tablas
   await sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
   await sequelize.sync({ force: true })
   await sequelize.query('SET FOREIGN_KEY_CHECKS = 1')
 
-  // ============================
-  // 2. Crear usuarios
-  // ============================
   console.log('\n👤 Creando usuarios...')
   const password = await bcrypt.hash('esteban22001', 10)
   const passwordGeneric = await bcrypt.hash('password123', 10)
@@ -73,9 +68,6 @@ async function seed() {
   const allUsers = [esteban, lucia, marcos, ana]
   console.log('  ✅ 4 usuarios creados')
 
-  // ============================
-  // 3. Crear tags
-  // ============================
   console.log('\n🏷️  Creando tags...')
   const tags = {}
   const tagNames = ['naturaleza', 'ciudad', 'arte', 'paisaje', 'macro', 'nocturna', 'arquitectura', 'viajes', 'retrato']
@@ -84,12 +76,8 @@ async function seed() {
   }
   console.log(`  ✅ ${tagNames.length} tags creados`)
 
-  // ============================
-  // 4. Crear publicaciones
-  // ============================
   console.log('\n📸 Creando publicaciones...')
 
-  // --- ESTEBAN: 3 posts ---
   const post1 = await Post.create({
     title: 'Atardecer en las montañas',
     description: 'Capturé este increíble atardecer mientras hacía trekking por la cordillera. Los colores del cielo eran surrealistas, mezcla de naranjas y púrpuras que parecían pintados a mano. Definitivamente uno de los mejores atardeceres que he fotografiado.',
@@ -127,7 +115,6 @@ async function seed() {
   ])
   await post3.addTags([tags['ciudad'], tags['nocturna'], tags['arquitectura']])
 
-  // --- LUCÍA: 3 posts ---
   const post4 = await Post.create({
     title: 'Sendero entre bosques',
     description: 'Un paseo matutino por el bosque patagónico. La niebla entre los árboles crea una atmósfera mágica e irreal. Cada rayo de sol que se filtra es una oportunidad fotográfica.',
@@ -167,7 +154,6 @@ async function seed() {
   })
   await post6.addTags([tags['naturaleza'], tags['paisaje']])
 
-  // --- MARCOS: 3 posts ---
   const post7 = await Post.create({
     title: 'Callejón europeo',
     description: 'Recorriendo las callecitas de un pueblito en el sur de Francia. Los adoquines, las flores colgantes y esa luz cálida hacen que cada rincón sea una postal. Viajes que inspiran.',
@@ -197,7 +183,7 @@ async function seed() {
     title: 'Amanecer en la costa',
     description: 'Madrugar tiene su recompensa. Este amanecer en la costa con el cielo encendido de colores fue una de esas experiencias que no se olvidan. La fotografía no le hace justicia, pero se acerca.',
     UserId: marcos.id,
-    commentsEnabled: false // Post con comentarios deshabilitados para testeo
+    commentsEnabled: false
   })
   await PostImage.bulkCreate([
     { url: IMG.ocean, license: 'free', PostId: post9.id },
@@ -209,12 +195,8 @@ async function seed() {
   const allPosts = [post1, post2, post3, post4, post5, post6, post7, post8, post9]
   console.log('  ✅ 9 publicaciones creadas (con imágenes y tags)')
 
-  // ============================
-  // 5. Crear comentarios
-  // ============================
   console.log('\n💬 Creando comentarios...')
 
-  // Comentarios en posts de Esteban
   await Comment.bulkCreate([
     { content: '¡Qué colores increíbles! ¿Con qué cámara sacaste esto?', PostId: post1.id, UserId: lucia.id },
     { content: 'El atardecer más hermoso que vi en mucho tiempo. Excelente composición.', PostId: post1.id, UserId: marcos.id },
@@ -230,7 +212,6 @@ async function seed() {
     { content: 'La composición urbana nocturna es tu fuerte, sin duda.', PostId: post3.id, UserId: ana.id }
   ])
 
-  // Comentarios en posts de Lucía
   await Comment.bulkCreate([
     { content: 'La niebla le da un toque misterioso increíble', PostId: post4.id, UserId: esteban.id },
     { content: '¿Dónde es esto? Parece un bosque encantado', PostId: post4.id, UserId: marcos.id },
@@ -245,7 +226,6 @@ async function seed() {
     { content: 'La hora dorada siempre entrega los mejores resultados ✨', PostId: post6.id, UserId: ana.id }
   ])
 
-  // Comentarios en posts de Marcos
   await Comment.bulkCreate([
     { content: 'Me transporté a Europa con esta foto. Hermosa.', PostId: post7.id, UserId: lucia.id },
     { content: '¡Los colores son increíbles! ¿Editaste mucho?', PostId: post7.id, UserId: esteban.id },
@@ -259,22 +239,19 @@ async function seed() {
 
   console.log('  ✅ 26 comentarios creados')
 
-  // ============================
-  // 6. Crear follows
-  // ============================
   console.log('\n🤝 Creando relaciones de seguimiento...')
 
   await Follow.bulkCreate([
-    // Esteban sigue a Lucía y Marcos
+
     { follower_id: esteban.id, following_id: lucia.id },
     { follower_id: esteban.id, following_id: marcos.id },
-    // Lucía sigue a Esteban y Ana
+
     { follower_id: lucia.id, following_id: esteban.id },
     { follower_id: lucia.id, following_id: ana.id },
-    // Marcos sigue a Esteban y Lucía
+
     { follower_id: marcos.id, following_id: esteban.id },
     { follower_id: marcos.id, following_id: lucia.id },
-    // Ana sigue a todos
+
     { follower_id: ana.id, following_id: esteban.id },
     { follower_id: ana.id, following_id: lucia.id },
     { follower_id: ana.id, following_id: marcos.id }
@@ -282,26 +259,21 @@ async function seed() {
 
   console.log('  ✅ 9 relaciones de seguimiento creadas')
 
-  // ============================
-  // 7. Crear ratings
-  // ============================
   console.log('\n⭐ Creando ratings...')
 
-  // Obtener todas las imágenes
   const allImages = await PostImage.findAll()
 
-  // Dar ratings variados a diferentes imágenes
   const ratingsData = []
   const ratingUsers = [lucia, marcos, ana, esteban]
 
   for (const img of allImages) {
-    // Cada imagen recibe entre 1-3 ratings de usuarios random
+
     const post = await Post.findByPk(img.PostId)
-    const eligibleUsers = ratingUsers.filter(u => u.id !== post.UserId) // No se auto-valoriza
+    const eligibleUsers = ratingUsers.filter(u => u.id !== post.UserId)
 
     for (let i = 0; i < Math.min(eligibleUsers.length, 2 + Math.floor(Math.random() * 2)); i++) {
       ratingsData.push({
-        value: 3 + Math.floor(Math.random() * 3), // Rating entre 3-5
+        value: 3 + Math.floor(Math.random() * 3),
         UserId: eligibleUsers[i].id,
         ImageId: img.id
       })
@@ -311,17 +283,14 @@ async function seed() {
   await Rating.bulkCreate(ratingsData)
   console.log(`  ✅ ${ratingsData.length} ratings creados`)
 
-  // ============================
-  // ❤️ NUEVO: Crear Likes
-  // ============================
   console.log('\n❤️  Creando likes...')
   const likesData = []
-  
+
   for (const post of allPosts) {
-    // Cada post recibe entre 1 y 4 likes de usuarios aleatorios
+
     const numLikes = 1 + Math.floor(Math.random() * 4)
     const shuffledUsers = [...allUsers].sort(() => 0.5 - Math.random())
-    
+
     for (let i = 0; i < numLikes; i++) {
       likesData.push({
         PostId: post.id,
@@ -329,13 +298,10 @@ async function seed() {
       })
     }
   }
-  
+
   await Like.bulkCreate(likesData)
   console.log(`  ✅ ${likesData.length} likes creados`)
 
-  // ============================
-  // 8. Crear notificaciones
-  // ============================
   console.log('\n🔔 Creando notificaciones...')
 
   await Notification.create({
@@ -372,9 +338,6 @@ async function seed() {
 
   console.log('  ✅ 4 notificaciones creadas')
 
-  // ============================
-  // 9. Crear colecciones
-  // ============================
   console.log('\n📁 Creando colecciones...')
 
   await Collection.create({ name: 'Mis favoritas', UserId: esteban.id })
@@ -383,12 +346,8 @@ async function seed() {
 
   console.log('  ✅ 3 colecciones creadas')
 
-  // ============================
-  // 🚩 NUEVO: Crear Reportes (Denuncias) para testing de moderación
-  // ============================
   console.log('\n🚩 Creando reportes de prueba...')
 
-  // Caso 1: Post de Lucía (post4) tiene 1 reporte pendiente de Marcos (bloquea edición)
   post4.status = 'reported'
   await post4.save()
   await Report.create({
@@ -400,7 +359,6 @@ async function seed() {
     status: 'pending'
   })
 
-  // Caso 2: Post de Lucía (post5) tiene 3 reportes (está bajo revisión formal)
   post5.status = 'under_review'
   await post5.save()
   await Report.bulkCreate([
@@ -430,7 +388,6 @@ async function seed() {
     }
   ])
 
-  // Caso 3: Un comentario denunciado en el post de Esteban (post1) para probar la moderación por el autor del post.
   const commentInPost1 = await Comment.findOne({ where: { PostId: post1.id, UserId: lucia.id } })
   if (commentInPost1) {
     await Report.create({
@@ -445,9 +402,6 @@ async function seed() {
 
   console.log('  ✅ Reportes de prueba creados')
 
-  // ============================
-  // Resumen
-  // ============================
   console.log('\n' + '='.repeat(50))
   console.log('🎉 ¡Seed completado exitosamente!')
   console.log('='.repeat(50))

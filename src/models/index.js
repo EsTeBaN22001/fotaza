@@ -12,12 +12,9 @@ const Interest = require('./Interest')
 const Like = require('./Like')
 const Bookmark = require('./Bookmark')
 
-
-// Relaciones
 User.hasMany(Post, { foreignKey: 'UserId', as: 'posts' })
 Post.belongsTo(User, { foreignKey: 'UserId', as: 'User' })
 
-// 🖼️ Post ↔ PostImage
 Post.hasMany(PostImage, { foreignKey: 'PostId', as: 'images' })
 PostImage.belongsTo(Post, { foreignKey: 'PostId' })
 
@@ -36,42 +33,38 @@ Tag.belongsToMany(Post, { through: 'post_tags' })
 User.belongsToMany(User, {
   as: 'Followers',
   through: Follow,
-  foreignKey: 'following_id', // Columna que apunta al usuario que RECIBE el follow
-  otherKey: 'follower_id' // Columna que apunta al usuario que HACE el follow
+  foreignKey: 'following_id',
+  otherKey: 'follower_id'
 })
 
 User.belongsToMany(User, {
   as: 'Following',
   through: Follow,
-  foreignKey: 'follower_id', // Columna que apunta al usuario que HACE el follow
-  otherKey: 'following_id' // Columna que apunta al usuario que RECIBE el follow
+  foreignKey: 'follower_id',
+  otherKey: 'following_id'
 })
 
-// 🔔 Notificaciones
 User.hasMany(Notification, { foreignKey: 'UserId', as: 'notifications' })
 Notification.belongsTo(User, { foreignKey: 'UserId', as: 'Receiver' })
 Notification.belongsTo(User, { foreignKey: 'actorId', as: 'Actor' })
 Collection.belongsTo(User)
 
-// ❤️ Likes
 User.hasMany(Like, { onDelete: 'CASCADE' })
 Like.belongsTo(User, { onDelete: 'CASCADE' })
 Post.hasMany(Like, { onDelete: 'CASCADE' })
 Like.belongsTo(Post, { onDelete: 'CASCADE' })
-// Atajo: Muchos a muchos entre User y Post a través de Like
+
 User.belongsToMany(Post, { through: Like, as: 'LikedPosts', onDelete: 'CASCADE' })
 Post.belongsToMany(User, { through: Like, as: 'LikedBy', onDelete: 'CASCADE' })
 
-// 🔖 Bookmarks (Favoritos)
 User.hasMany(Bookmark, { onDelete: 'CASCADE' })
 Bookmark.belongsTo(User, { onDelete: 'CASCADE' })
 Post.hasMany(Bookmark, { onDelete: 'CASCADE' })
 Bookmark.belongsTo(Post, { onDelete: 'CASCADE' })
-// Atajo: Muchos a muchos entre User y Post a través de Bookmark
+
 User.belongsToMany(Post, { through: Bookmark, as: 'SavedPosts', onDelete: 'CASCADE' })
 Post.belongsToMany(User, { through: Bookmark, as: 'SavedBy', onDelete: 'CASCADE' })
 
-// 🚩 Reports (Denuncias)
 User.hasMany(Report, { foreignKey: 'reporterId', as: 'reportsMade' })
 Report.belongsTo(User, { foreignKey: 'reporterId', as: 'Reporter' })
 User.hasMany(Report, { foreignKey: 'resolverId', as: 'reportsResolved' })

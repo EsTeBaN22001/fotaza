@@ -1,13 +1,7 @@
-// src/middlewares/authMiddleware.js
+
 const jwt = require('jsonwebtoken')
 const { User, Notification } = require('../models')
 
-/**
- * Middleware combinado:
- * 1. Lee y verifica el token JWT de las cookies
- * 2. Adjunta el usuario a req.user
- * 3. Expone el usuario a vistas Pug vía res.locals.user
- */
 exports.attachUser = async (req, res, next) => {
   try {
     const token = req.cookies?.token
@@ -61,17 +55,14 @@ exports.attachUser = async (req, res, next) => {
     next()
   }
 }
-/**
- * Middleware para proteger rutas: requiere usuario autenticado
- * Usar en rutas que solo usuarios logueados pueden acceder
- */
+
 exports.authRequired = (req, res, next) => {
   if (!req.user) {
-    // Si es una petición AJAX, devolvemos 401
+
     if (req.xhr || req.headers.accept?.indexOf('json') > -1) {
       return res.status(401).json({ error: 'No autorizado' })
     }
-    // Pasamos el error al manejador global
+
     const error = new Error('Acceso restringido')
     error.status = 401
     return next(error)
@@ -79,9 +70,6 @@ exports.authRequired = (req, res, next) => {
   next()
 }
 
-/**
- * Middleware para rutas de validador: requiere rol 'validator'
- */
 exports.validatorRequired = (req, res, next) => {
   if (!req.user || req.user.role !== 'validator') {
     return res.status(403).render('pages/error', {

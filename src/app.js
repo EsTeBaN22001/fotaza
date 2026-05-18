@@ -18,24 +18,18 @@ const { attachUser } = require('./middlewares/authMiddleware')
 
 const app = express()
 
-// 🎨 View Engine
 app.set('view engine', 'pug')
 app.set('views', path.join(__dirname, 'views'))
 
-// 🍪 Cookies (primero para que esté disponible en todo el flujo)
 app.use(cookieParser())
 
-// 📦 Parsers de cuerpo (¡CRÍTICO: antes de method-override!)
 app.use(express.urlencoded({ extended: true }))
-app.use(express.json()) // ✅ Recomendado para APIs o payloads JSON
+app.use(express.json())
 
-// 📁 Archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')))
 
-// 🔐 Auth Middleware + Locals globales para vistas
 app.use(attachUser)
 
-// 🗺️ Rutas (¡SIEMPRE al final!)
 app.use(indexRoutes)
 app.use('/auth', authRoutes)
 app.use('/home', homeRoutes)
@@ -46,7 +40,6 @@ app.use('/reports', reportRoutes)
 app.use('/moderator', moderatorRoutes)
 app.use('/notifications', notificationRoutes)
 
-// 🚀 Iniciar servidor después de sincronizar BD
 sequelize
   .sync()
   .then(() => {
@@ -57,25 +50,22 @@ sequelize
   })
   .catch(err => {
     console.error('❌ Error sincronizando BD:', err)
-    process.exit(1) // Salir con error si la BD no está disponible
+    process.exit(1)
   })
 
-// ❌ Manejo de errores 404 (opcional pero recomendado)
 app.use((req, res) => {
   res.status(404).render('pages/error', {
     message: 'Página no encontrada',
-    errors: [] // Compatible con tu layout
+    errors: []
   })
 })
 
-// ❌ Manejo de errores globales (catch-all)
 app.use((err, req, res, next) => {
   const status = err.status || 500
   const message = err.message || 'Error interno del servidor'
 
   console.error(`💥 [${status}] Error:`, err.message)
 
-  // Si es un error de autorización (401), usamos la vista dedicada
   if (status === 401) {
     return res.status(401).render('pages/unauthorized', {
       title: 'Acceso Restringido',
@@ -83,7 +73,6 @@ app.use((err, req, res, next) => {
     })
   }
 
-  // Para otros errores, usamos la página de error genérica
   res.status(status).render('pages/error', {
     status,
     message: status === 500 ? 'Algo salió mal en nuestro servidor' : message,

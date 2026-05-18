@@ -18,7 +18,6 @@ exports.getNotifications = async (req, res) => {
 
     const totalPages = Math.ceil(count / limit)
 
-    // Contar no leídas
     const unreadCount = await Notification.count({
       where: { UserId: req.user.id, is_read: false }
     })
@@ -63,11 +62,10 @@ exports.markAllAsRead = async (req, res) => {
       { where: { UserId: req.user.id, is_read: false } }
     )
 
-    // Si viene de AJAX o Form normal
     if (req.xhr || req.headers.accept.indexOf('json') > -1) {
       return res.status(200).json({ success: true })
     }
-    
+
     res.redirect('/notifications')
   } catch (error) {
     console.error('Error marking all as read:', error)

@@ -7,13 +7,12 @@ exports.getFollowedFeed = async (req, res) => {
     const limit = 12
     const offset = (page - 1) * limit
 
-    // IDs de usuarios que sigo
     const following = await req.user.getFollowing()
     const followingIds = following.map(u => u.id)
 
     let posts = []
     if (followingIds.length > 0) {
-      // ✅ FIX: Reasignar la variable (sin redeclarar con const)
+
       posts = await Post.findAll({
         where: {
           UserId: { [Op.in]: followingIds },

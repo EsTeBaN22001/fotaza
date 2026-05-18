@@ -19,9 +19,9 @@ const Follow = sequelize.define(
     tableName: 'follows',
     timestamps: true,
     createdAt: 'created_at',
-    updatedAt: false, // No necesitamos fecha de actualización en un follow
+    updatedAt: false,
     indexes: [
-      { unique: true, fields: ['follower_id', 'following_id'] } // ✅ Cumple: "evitar seguir al mismo usuario más de una vez"
+      { unique: true, fields: ['follower_id', 'following_id'] }
     ]
   }
 )

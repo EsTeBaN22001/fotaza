@@ -6,7 +6,7 @@ const sequelize = require('../config/db')
 exports.getDashboard = async (req, res) => {
   try {
     const statusFilter = req.query.status || 'pending'
-    
+
     const reports = await Report.findAll({
       where: { status: statusFilter },
       include: [
@@ -87,7 +87,6 @@ exports.resolveReport = async (req, res) => {
     const report = await Report.findByPk(reportId)
     if (!report) return res.status(404).json({ error: 'Reporte no encontrado' })
 
-    // Aprobar el reporte y dar de baja el contenido
     await Report.update(
       { status: 'resolved', resolverId, resolutionNotes },
       { where: { targetType: report.targetType, targetId: report.targetId, status: 'pending' }, transaction }
@@ -119,8 +118,8 @@ exports.resolveReport = async (req, res) => {
       const comment = await Comment.findByPk(report.targetId, { transaction })
       if (comment) {
         targetOwnerId = comment.UserId
-        await comment.destroy({ transaction }) // O marcar como eliminado logicamente
-        
+        await comment.destroy({ transaction })
+
         await notificationService.createNotification({
           receiverId: targetOwnerId,
           type: 'COMMENT_REMOVED',
@@ -130,7 +129,6 @@ exports.resolveReport = async (req, res) => {
       }
     }
 
-    // Comprobar si el usuario debe ser suspendido (3 posts removidos)
     if (targetOwnerId) {
       const removedPostsCount = await Post.count({
         where: { UserId: targetOwnerId, status: 'removed' },
@@ -172,20 +170,18 @@ exports.dismissReport = async (req, res) => {
     const report = await Report.findByPk(reportId)
     if (!report) return res.status(404).json({ error: 'Reporte no encontrado' })
 
-    // Desestimar
     await Report.update(
       { status: 'dismissed', resolverId, resolutionNotes },
       { where: { targetType: report.targetType, targetId: report.targetId, status: 'pending' }, transaction }
     )
 
-    // Si el post estaba reportado o under_review, debe volver a approved
     if (report.targetType === 'post' || report.targetType === 'postImage') {
       let postId = report.targetId
       if (report.targetType === 'postImage') {
         const img = await PostImage.findByPk(report.targetId)
         if (img) postId = img.PostId
       }
-      
+
       const post = await Post.findByPk(postId, { transaction })
       if (post && (post.status === 'reported' || post.status === 'under_review')) {
         post.status = 'approved'
@@ -212,15 +208,13 @@ exports.deleteReport = async (req, res) => {
       return res.status(404).render('pages/error', { message: 'Reporte no encontrado' })
     }
 
-    // Validación crítica: solo se pueden eliminar reportes del historial (resueltos o desestimados)
     if (report.status === 'pending') {
       return res.status(400).render('pages/error', { message: 'No se puede eliminar un reporte que aún está pendiente' })
     }
 
     const currentStatus = report.status
     await report.destroy()
-    
-    // Redirigir de vuelta al panel con la misma pestaña seleccionada
+
     res.redirect(`/moderator/reports?status=${currentStatus}`)
   } catch (error) {
     console.error('Error in deleteReport:', error)

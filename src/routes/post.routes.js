@@ -6,23 +6,17 @@ const bookmarkController = require('../controllers/bookmark.controller')
 const { authRequired } = require('../middlewares/authMiddleware')
 const upload = require('../middlewares/uploadMiddleware')
 
-// vista crear
 router.get('/create', authRequired, controller.showCreate)
 
-// crear
 router.post('/', authRequired, upload.array('images', 5), controller.createPost)
 
-// 📄 ver publicación individual
 router.get('/:id', authRequired, controller.showPost)
 
-// 💬 comentarios
 router.post('/:id/comments', authRequired, controller.createComment)
 router.post('/:id/comments/:commentId/delete', authRequired, controller.deleteComment)
 
-// ❤️ likes
 router.post('/:id/like', authRequired, controller.toggleLike)
 
-// 🔖 favoritos
 router.post('/:id/save', authRequired, bookmarkController.toggleBookmark)
 
 module.exports = router

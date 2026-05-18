@@ -1,7 +1,6 @@
 extends ../layouts/app
 
 block content
-  // ✅ ESTADO VACÍO: Cuando no hay publicaciones
   if !posts || posts.length === 0
     .container.mt-5.text-center
       .display-4.mb-3 📷
@@ -34,13 +33,11 @@ block content
               | Recuerda: todas las imágenes deben ser de tu autoría.
 
   else
-    // ✅ LISTADO NORMAL: Cuando hay publicaciones
     .row
       each post in posts
         .col-md-4.mb-4
           .card.shadow-sm.h-100
 
-            // ===== IMÁGENES =====
             if post.images.length == 1
               a(href=`/posts/${post.id}`)
                 img.card-img-top(
@@ -87,14 +84,12 @@ block content
                   style="height: 250px; object-fit: cover;"
                 )
 
-            // ===== BODY =====
             .card-body.d-flex.flex-column
               h5.card-title
                 a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
               
               p.card-text.text-muted.mb-2= post.description.length > 100 ? post.description.substring(0, 100) + '...' : post.description
               
-              //- Likes & Bookmarks
               .d-flex.align-items-center.gap-3.mb-2
                 - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
                 - const likeCount = post.Likes ? post.Likes.length : 0
@@ -127,7 +122,6 @@ block content
                     i.bi.bi-bookmark
                     i.bi.bi-lock-fill.ms-1.text-secondary(style="font-size: 0.75rem;")
 
-              //- Tags
               if post.Tags && post.Tags.length > 0
                 .d-flex.flex-wrap.gap-1.mb-3
                   each tag in post.Tags

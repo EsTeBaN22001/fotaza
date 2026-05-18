@@ -31,12 +31,10 @@ exports.createReport = async (req, res) => {
       targetPostId = comment.PostId
     }
 
-    // 1. Evitar auto-reporte
     if (targetOwnerId === reporterId) {
       return res.status(403).json({ error: 'No puedes denunciar tu propio contenido' })
     }
 
-    // 2. Evitar reporte duplicado
     const existingReport = await Report.findOne({
       where: { reporterId, targetType, targetId }
     })
@@ -45,7 +43,6 @@ exports.createReport = async (req, res) => {
       return res.status(409).json({ error: 'Ya has denunciado este contenido' })
     }
 
-    // Crear reporte
     await Report.create({
       reporterId,
       targetType,
@@ -54,18 +51,14 @@ exports.createReport = async (req, res) => {
       description
     })
 
-    // Si es sobre un post o imagen, aplicar reglas al Post
     if (targetType === 'post' || targetType === 'postImage') {
       const post = await Post.findByPk(targetPostId)
-      
-      // Bloquear modificación cambiando el estado a reported si estaba approved
+
       if (post.status === 'approved' || post.status === 'pending') {
         post.status = 'reported'
         await post.save()
       }
 
-      // 4. Umbral de Moderación
-      // Obtener todas las imágenes del post para contar reportes agrupados
       const postImages = await PostImage.findAll({ where: { PostId: targetPostId }, attributes: ['id'] })
       const imageIds = postImages.map(img => img.id)
 
@@ -77,7 +70,7 @@ exports.createReport = async (req, res) => {
             { targetType: 'post', targetId: targetPostId },
             { targetType: 'postImage', targetId: { [Op.in]: imageIds } }
           ],
-          status: 'pending' // Solo contar reportes activos
+          status: 'pending'
         }
       })
 
@@ -85,7 +78,6 @@ exports.createReport = async (req, res) => {
         post.status = 'under_review'
         await post.save()
 
-        // Notificar al autor
         await notificationService.createNotification({
           receiverId: targetOwnerId,
           type: 'POST_UNDER_REVIEW',
@@ -95,7 +87,7 @@ exports.createReport = async (req, res) => {
       }
     } else if (targetType === 'comment') {
        await notificationService.createNotification({
-         receiverId: targetOwnerId, // Notifica al autor del comentario
+         receiverId: targetOwnerId,
          type: 'COMMENT_REPORTED',
          message: 'Un comentario tuyo ha sido reportado.',
          relatedId: targetId

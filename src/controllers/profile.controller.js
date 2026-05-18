@@ -131,7 +131,6 @@ exports.toggleFollow = async (req, res) => {
     const target = await User.findOne({ where: { username: req.params.username } })
     if (!target) return res.redirect('back')
 
-    // ✅ Consigna: No auto-seguir
     if (req.user.id === target.id) {
       return res.redirect(`/profile/${req.params.username}?error=No+puedes+seguirte+a+ti+mismo`)
     }
@@ -149,7 +148,6 @@ exports.toggleFollow = async (req, res) => {
       await Follow.create({ follower_id: req.user.id, following_id: target.id })
       message = `Ahora+sigues+a+${target.username}`
 
-      // 🔔 Notificación (Requisito 5)
       await notificationService.createNotification({
         receiverId: target.id,
         actorId: req.user.id,

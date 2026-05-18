@@ -14,7 +14,6 @@ exports.showCreate = async (req, res) => {
   }
 }
 
-// 📄 Ver publicación individual
 exports.showPost = async (req, res) => {
   try {
     const post = await Post.findByPk(req.params.id, {
@@ -46,7 +45,6 @@ exports.showPost = async (req, res) => {
     const saveCount = await Bookmark.count({ where: { PostId: post.id } })
     const isSaved = req.user ? await Bookmark.findOne({ where: { PostId: post.id, UserId: req.user.id } }) : false
 
-    // Toast messages from query params
     const errors = req.query.error ? [{ message: decodeURIComponent(req.query.error) }] : []
     const success = req.query.success ? decodeURIComponent(req.query.success) : null
 
@@ -70,7 +68,6 @@ exports.showPost = async (req, res) => {
   }
 }
 
-// 💬 Crear comentario
 exports.createComment = async (req, res) => {
   try {
     const { content } = req.body
@@ -95,7 +92,6 @@ exports.createComment = async (req, res) => {
       UserId: req.user.id
     })
 
-    // 🔔 Notificar al autor
     await notificationService.createNotification({
       receiverId: post.UserId,
       actorId: req.user.id,
@@ -110,7 +106,6 @@ exports.createComment = async (req, res) => {
   }
 }
 
-// 🗑️ Eliminar comentario
 exports.deleteComment = async (req, res) => {
   try {
     const { id, commentId } = req.params
@@ -120,7 +115,6 @@ exports.deleteComment = async (req, res) => {
       return res.redirect(`/posts/${id}?error=Comentario+no+encontrado`)
     }
 
-    // Solo el dueño del comentario puede eliminarlo
     if (comment.UserId !== req.user.id) {
       return res.redirect(`/posts/${id}?error=No+tienes+permiso+para+eliminar+este+comentario`)
     }
@@ -174,7 +168,7 @@ exports.showEditForm = async (req, res) => {
     const post = await Post.findByPk(req.params.id, {
       include: [
         { model: PostImage, as: 'images' },
-        { model: Tag } // To get currently associated tags
+        { model: Tag }
       ]
     })
 
@@ -200,7 +194,6 @@ exports.showEditForm = async (req, res) => {
   }
 }
 
-// ✏️ Actualizar publicación
 exports.updatePost = async (req, res) => {
   try {
     const postCheck = await Post.findByPk(req.params.id)
@@ -212,8 +205,7 @@ exports.updatePost = async (req, res) => {
     res.redirect(`/profile/${req.user.username}?success=Publicación+actualizada+correctamente`)
   } catch (err) {
     const tags = await Tag.findAll()
-    
-    // ✅ Recuperar el post para re-renderizar el formulario
+
     const post = await Post.findByPk(req.params.id, {
       include: [
         { model: PostImage, as: 'images' },
@@ -235,7 +227,6 @@ exports.updatePost = async (req, res) => {
   }
 }
 
-// 🗑️ Eliminar publicación
 exports.deletePost = async (req, res) => {
   try {
     await postService.deletePost(req)
@@ -245,7 +236,6 @@ exports.deletePost = async (req, res) => {
   }
 }
 
-// ❤️ Toggle Like
 exports.toggleLike = async (req, res) => {
   try {
     const postId = req.params.id
@@ -268,7 +258,6 @@ exports.toggleLike = async (req, res) => {
       await Like.create({ PostId: postId, UserId: userId })
       liked = true
 
-      // 🔔 Notificar al autor
       await notificationService.createNotification({
         receiverId: post.UserId,
         actorId: userId,

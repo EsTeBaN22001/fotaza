@@ -1,17 +1,11 @@
 const { Notification } = require('../models')
 
-/**
- * Servicio centralizado para crear notificaciones en la plataforma.
- * Contiene reglas anti-spam (como no notificarse a uno mismo).
- */
 exports.createNotification = async ({ receiverId, actorId, type, relatedId, message }) => {
   try {
-    // 1. Regla Anti-Spam: No auto-notificarse
     if (actorId && receiverId === actorId) {
       return null
     }
 
-    // 2. Mensajes por defecto según el tipo de evento
     let finalMessage = message || 'Tienes una nueva notificación'
 
     switch (type) {
@@ -27,8 +21,7 @@ exports.createNotification = async ({ receiverId, actorId, type, relatedId, mess
       case 'PUBLICATION_INTERESTED':
         finalMessage = 'ha guardado tu publicación.'
         break
-      
-      // Tipos administrativos / Moderación
+
       case 'POST_UNDER_REVIEW':
         finalMessage = message || 'Tu publicación está bajo revisión por múltiples denuncias.'
         break
@@ -40,7 +33,6 @@ exports.createNotification = async ({ receiverId, actorId, type, relatedId, mess
         break
     }
 
-    // 3. Crear la notificación
     const notification = await Notification.create({
       UserId: receiverId,
       actorId: actorId || null,
@@ -52,7 +44,6 @@ exports.createNotification = async ({ receiverId, actorId, type, relatedId, mess
     return notification
   } catch (error) {
     console.error('Error en notificationService:', error)
-    // Silenciamos el error para no romper el flujo principal de la acción del usuario
     return null
   }
 }

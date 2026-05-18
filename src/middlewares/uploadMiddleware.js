@@ -32,7 +32,7 @@ const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 20 * 1024 * 1024 // ✅ 20MB por imagen (ajusta según necesites)
+    fileSize: 20 * 1024 * 1024
   }
 })
 

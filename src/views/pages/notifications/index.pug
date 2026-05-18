@@ -24,7 +24,7 @@ block content
                 - let iconClass = 'bi-bell'
                 - let linkUrl = '#'
                 
-                //- Definir íconos y links según el tipo
+
                 if notif.type === 'COMMENT_CREATED'
                   - iconClass = 'bi-chat-dots text-primary'
                   - linkUrl = `/posts/${notif.relatedId}`
@@ -87,7 +87,6 @@ block content
               h4.text-muted Sin notificaciones
               p.text-muted.mb-0 No tienes nuevas alertas en este momento.
 
-  //- Agregar script para llamadas AJAX
   script.
     async function markRead(id) {
       try {
@@ -105,7 +104,7 @@ block content
             const dotBtn = item.querySelector('.bi-circle-fill');
             if (dotBtn) dotBtn.parentElement.remove();
             
-            // Actualizar badge del header si existe
+
             const badge = document.querySelector('.navbar .bi-bell + .badge');
             if (badge) {
               const currentCount = parseInt(badge.textContent);

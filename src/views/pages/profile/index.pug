@@ -6,7 +6,6 @@ block content
       .card-body.p-4
         .row.align-items-center
           .col-md-2.text-center
-            // Placeholder de avatar con Bootstrap Icons
             .bg-secondary.rounded-circle.d-flex.align-items-center.justify-content-center.mx-auto.mb-3(style="width: 110px; height: 110px;")
               i.bi.bi-person.text-white(style="font-size: 3rem;")
           .col-md-7
@@ -26,7 +25,6 @@ block content
               form(method="POST" action=`/profile/${profileUser.username}/follow`)
                 button.btn.btn-primary(type="submit") Seguir
 
-        // Estadísticas
         .row.mt-4.text-center
           .col-4
             a.fw-bold.text-decoration-none.d-inline-flex.align-items-center.gap-2(href=`/profile/${profileUser.username}/followers`)
@@ -47,7 +45,6 @@ block content
           each post in posts
             .col-md-4.col-sm-6.mb-4
               .card.h-100.shadow-sm
-                // ✅ Galería de imágenes (Slide si hay más de una)
                 if post.images && post.images.length > 0
                   if post.images.length === 1
                     a(href=`/posts/${post.id}`)
@@ -81,14 +78,12 @@ block content
                   h6.card-title= post.title
                   p.card-text.text-truncate.small.mb-1= post.description || 'Sin descripción'
                   
-                  //- Tags
                   if post.Tags && post.Tags.length > 0
                     .d-flex.flex-wrap.gap-1.mb-2
                       each tag in post.Tags
                         span.badge.rounded-pill.bg-light.text-primary.border.x-small(style="font-size: 0.7rem;")= tag.name
                   small.text-muted.d-block.mb-2= new Date(post.created_at).toLocaleDateString('es-AR')
                   
-                  //- Likes & Bookmarks
                   .d-flex.align-items-center.gap-3.mb-2
                     - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
                     - const likeCount = post.Likes ? post.Likes.length : 0
@@ -110,7 +105,6 @@ block content
                       i.bi(class=isSaved ? 'bi-bookmark-fill' : 'bi-bookmark')
 
                   .d-flex.justify-content-between.mt-3
-                    // 🔐 VALIDACIÓN: Solo el dueño ve Editar/Eliminar
                     if isOwner
                       a.btn.btn-sm.btn-outline-primary(href=`/profile/edit/${post.id}`) ✏️ Editar
                       
@@ -118,10 +112,8 @@ block content
                         button.btn.btn-sm.btn-outline-danger(type='submit', onclick="return confirm('¿Eliminar esta publicación y sus imágenes?')")
                           | 🗑️ Eliminar
                     else
-                      // 👁️ Visitantes: Solo pueden ver la publicación
                       a.btn.btn-sm.btn-outline-secondary(href=`/posts/${post.id}`) Ver publicación
 
-          // ✅ Mensaje cuando no hay posts
           if posts.length === 0
             .col-12.text-center.text-muted.py-4
               if isOwner

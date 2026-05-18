@@ -32,7 +32,6 @@ html
 
     .toast-container.position-fixed.top-0.end-0.p-3(style="z-index: 1100")
       
-      // ✅ Success Toast (string único)
       if success
         .toast.toast-success.show(role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000")
           .toast-header.bg-success.text-white
@@ -41,7 +40,6 @@ html
             button.btn-close.btn-close-white(type="button" data-bs-dismiss="toast")
           .toast-body= success
 
-      // ✅ Errors Toast (siempre array, incluso si tiene 1 solo elemento)
       if errors && errors.length
         .toast.toast-error.show(role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000")
           .toast-header.bg-danger.text-white

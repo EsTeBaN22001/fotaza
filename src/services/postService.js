@@ -30,7 +30,6 @@ exports.createPost = async req => {
       { transaction }
     )
 
-    // Asignar tags si existen
     if (tags) {
       const tagIds = Array.isArray(tags) ? tags : [tags]
       await post.setTags(tagIds, { transaction })
@@ -86,11 +85,11 @@ exports.updatePost = async req => {
   const postId = req.params.id
   const userId = req.user.id
 
-  const post = await Post.findOne({ 
+  const post = await Post.findOne({
     where: { id: postId, UserId: userId },
     include: [{ model: PostImage, as: 'images' }]
   })
-  
+
   if (!post) throw new Error('No tienes permiso o la publicación no existe')
   if (!title || !description) throw new Error('Título y descripción son obligatorios')
 
@@ -104,7 +103,7 @@ exports.updatePost = async req => {
     error.code = 'LIMIT_FILE_COUNT'
     throw error
   }
-  
+
   if (currentImageCount - removedImageCount + newImageCount === 0) {
     throw new Error('La publicación debe tener al menos una imagen')
   }
@@ -112,39 +111,36 @@ exports.updatePost = async req => {
   const transaction = await Post.sequelize.transaction()
 
   try {
-    await post.update({ 
-      title, 
+    await post.update({
+      title,
       description,
       commentsEnabled: commentsEnabled === 'on'
     }, { transaction })
 
-    // Update tags
     if (tags) {
       const tagIds = Array.isArray(tags) ? tags : [tags]
       await post.setTags(tagIds, { transaction })
     } else {
-      await post.setTags([], { transaction }) // Clear tags if none selected
+      await post.setTags([], { transaction })
     }
 
     const uploadDir = path.join(__dirname, '../public/uploads')
 
-    // Handle removed images
     if (removedImagesArray.length > 0) {
       const imagesToRemove = post.images.filter(img => removedImagesArray.includes(img.id.toString()))
-      
+
       for (const img of imagesToRemove) {
         const fileName = path.basename(img.url)
         const filePath = path.join(uploadDir, fileName)
-        
+
         if (await fs.stat(filePath).catch(() => false)) {
           await fs.unlink(filePath)
         }
-        
+
         await img.destroy({ transaction })
       }
     }
 
-    // Handle new images
     if (req.files && req.files.length > 0) {
       const imagesToSave = []
 
@@ -203,7 +199,6 @@ exports.deletePost = async req => {
   try {
     const uploadDir = path.join(__dirname, '../public/uploads')
 
-    // 🗑️ Eliminar archivos del disco
     for (const img of post.images) {
       const fileName = path.basename(img.url)
       const filePath = path.join(uploadDir, fileName)
@@ -212,7 +207,6 @@ exports.deletePost = async req => {
       }
     }
 
-    // 🗑️ Eliminar registros en BD (cascada o manual)
     await PostImage.destroy({ where: { PostId: postId }, transaction })
     await post.destroy({ transaction })
 

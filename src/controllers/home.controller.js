@@ -7,7 +7,7 @@ exports.getHome = async (req, res) => {
       include: [
         {
           model: PostImage,
-          as: 'images' // ✅ Ya lo tenías bien
+          as: 'images'
         },
         {
           model: User,
