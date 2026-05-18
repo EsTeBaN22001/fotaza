@@ -1,0 +1,64 @@
+extends ../layouts/app
+
+block content
+  .row.mb-4
+    .col
+      h2 Panel de Moderación
+      p.text-muted Gestiona las denuncias de los usuarios y aplica acciones de revisión.
+
+  .row.mb-3
+    .col-md-4
+      .btn-group
+        a.btn(class=statusFilter === 'pending' ? 'btn-primary' : 'btn-outline-primary' href="/moderator/reports?status=pending") Pendientes
+        a.btn(class=statusFilter === 'resolved' ? 'btn-success' : 'btn-outline-success' href="/moderator/reports?status=resolved") Resueltos
+        a.btn(class=statusFilter === 'dismissed' ? 'btn-secondary' : 'btn-outline-secondary' href="/moderator/reports?status=dismissed") Desestimados
+
+  .card.shadow-sm
+    .card-body
+      if reports.length
+        .table-responsive
+          table.table.table-hover.align-middle
+            thead.table-light
+              tr
+                th Tipo
+                th Motivo
+                th Denunciante
+                th Fecha
+                th Estado
+                th Acciones
+            tbody
+              each report in reports
+                tr
+                  td
+                    if report.targetType === 'post'
+                      span.badge.bg-info Post
+                    else if report.targetType === 'postImage'
+                      span.badge.bg-warning Imagen
+                    else if report.targetType === 'comment'
+                      span.badge.bg-secondary Comentario
+                  td
+                    span.fw-bold= report.reason
+                    if report.description
+                      small.d-block.text-muted.text-truncate(style="max-width: 150px;" title=report.description)= report.description
+                  td= report.Reporter ? report.Reporter.username : 'Desconocido'
+                  td= new Date(report.created_at).toLocaleDateString('es-AR')
+                  td
+                    if report.status === 'pending'
+                      span.badge.bg-warning.text-dark Pendiente
+                    else if report.status === 'resolved'
+                      span.badge.bg-success Resuelto
+                    else
+                      span.badge.bg-secondary Desestimado
+                  td
+                    a.btn.btn-sm.btn-primary(href=`/moderator/reports/${report.targetType}/${report.targetId}`)
+                      i.bi.bi-eye
+                      |  Ver Caso
+                    if statusFilter !== 'pending'
+                      form(action=`/moderator/reports/${report.id}/delete` method="POST" class="d-inline ms-2")
+                        button.btn.btn-sm.btn-danger(type="submit" onclick="return confirm('¿Seguro que deseas eliminar este registro de reporte del historial?');")
+                          i.bi.bi-trash
+                          |  Eliminar
+      else
+        .text-center.py-5
+          i.bi.bi-inbox.fs-1.text-muted
+          p.mt-3 No hay denuncias con este estado.

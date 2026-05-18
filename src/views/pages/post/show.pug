@@ -50,6 +50,11 @@ block content
         .card.shadow-sm.border-0.mb-4
           .card-body.p-4
             h1.h4.fw-bold.mb-3= post.title
+            if post.status === 'reported' || post.status === 'under_review'
+              .alert.alert-warning.small.py-2.mb-3
+                i.bi.bi-exclamation-triangle-fill.me-2
+                | Contenido bajo revisión.
+
             
             .d-flex.align-items-center.mb-4
               .bg-secondary.rounded-circle.d-flex.align-items-center.justify-content-center.me-2(style="width: 40px; height: 40px; min-width: 40px;")
@@ -72,6 +77,16 @@ block content
                     li
                       form(action=`/profile/delete/${post.id}` method="POST")
                         button.dropdown-item.text-danger(type="submit" onclick="return confirm('¿Eliminar?')") Eliminar
+              else if user
+                .dropdown
+                  button.btn.btn-sm.btn-link.text-muted(data-bs-toggle="dropdown")
+                    i.bi.bi-three-dots
+                  ul.dropdown-menu.dropdown-menu-end
+                    li
+                      button.dropdown-item.text-danger.btn-report(data-target-type="post" data-target-id=post.id)
+                        i.bi.bi-flag.me-2
+                        | Denunciar
+
 
             if post.description
               .mb-4
@@ -143,6 +158,13 @@ block content
                           form(action=`/posts/${post.id}/comments/${comment.id}/delete` method="POST")
                             button.btn.btn-sm.text-muted.p-0(type="submit")
                               i.bi.bi-x
+                        else if user && post.User && user.id === post.User.id
+                          form(action=`/posts/${post.id}/comments/${comment.id}/delete` method="POST")
+                            button.btn.btn-sm.text-danger.p-0.me-2(type="submit" title="Eliminar del post")
+                              i.bi.bi-trash
+                        else if user
+                          button.btn.btn-sm.text-muted.p-0.btn-report(data-target-type="comment" data-target-id=comment.id title="Denunciar")
+                            i.bi.bi-flag
                       p.mb-0.small.mt-1(style="white-space: pre-wrap;")= comment.content
               else
                 .text-center.text-muted.py-4
@@ -159,5 +181,38 @@ block content
       }
     }
 
+  //- MODAL DE DENUNCIA
+  .modal.fade#reportModal(tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true")
+    .modal-dialog
+      .modal-content
+        .modal-header.bg-danger.text-white
+          h5.modal-title#reportModalLabel Denunciar Contenido
+          button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal" aria-label="Close")
+        form#reportForm
+          .modal-body
+            input(type="hidden" id="reportTargetType" name="targetType")
+            input(type="hidden" id="reportTargetId" name="targetId")
+            .mb-3
+              label.form-label(for="reportReason") Motivo de la denuncia
+              select.form-select#reportReason(name="reason" required)
+                option(value="" disabled selected) Selecciona un motivo...
+                option(value="SPAM") Spam
+                option(value="CONTENIDO_INAPROPIADO") Contenido Inapropiado
+                option(value="DESNUDEZ") Desnudez
+                option(value="VIOLENCIA") Violencia
+                option(value="DISCURSO_DE_ODIO") Discurso de Odio
+                option(value="COPYRIGHT") Infracción de Copyright
+                option(value="ACOSO") Acoso
+                option(value="ESTAFA") Estafa o Fraude
+                option(value="INFORMACION_FALSA") Información Falsa
+                option(value="OTRO") Otro
+            .mb-3
+              label.form-label(for="reportDescription") Descripción (opcional)
+              textarea.form-control#reportDescription(name="description" rows="3" placeholder="Aporta más detalles...")
+          .modal-footer
+            button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+            button.btn.btn-danger(type="submit") Enviar Denuncia
+
   script(src="/js/likes.js")
   script(src="/js/bookmarks.js")
+  script(src="/js/reports.js")

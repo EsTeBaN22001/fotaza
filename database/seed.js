@@ -12,7 +12,8 @@ const {
   Follow,
   Notification,
   Collection,
-  Like
+  Like,
+  Report
 } = require('../src/models')
 
 // Rutas de imágenes del seed (ya incluidas en el repo como WebP)
@@ -370,6 +371,68 @@ async function seed() {
   await Collection.create({ name: 'Para editar', UserId: marcos.id })
 
   console.log('  ✅ 3 colecciones creadas')
+
+  // ============================
+  // 🚩 NUEVO: Crear Reportes (Denuncias) para testing de moderación
+  // ============================
+  console.log('\n🚩 Creando reportes de prueba...')
+
+  // Caso 1: Post de Lucía (post4) tiene 1 reporte pendiente de Marcos (bloquea edición)
+  post4.status = 'reported'
+  await post4.save()
+  await Report.create({
+    reporterId: marcos.id,
+    targetType: 'post',
+    targetId: post4.id,
+    reason: 'SPAM',
+    description: 'Este post parece publicidad repetitiva de turismo.',
+    status: 'pending'
+  })
+
+  // Caso 2: Post de Lucía (post5) tiene 3 reportes (está bajo revisión formal)
+  post5.status = 'under_review'
+  await post5.save()
+  await Report.bulkCreate([
+    {
+      reporterId: esteban.id,
+      targetType: 'post',
+      targetId: post5.id,
+      reason: 'COPYRIGHT',
+      description: 'Esta foto fue tomada de una galería protegida de internet.',
+      status: 'pending'
+    },
+    {
+      reporterId: marcos.id,
+      targetType: 'post',
+      targetId: post5.id,
+      reason: 'ESTAFA',
+      description: 'Promociona una estafa inmobiliaria en el texto.',
+      status: 'pending'
+    },
+    {
+      reporterId: ana.id,
+      targetType: 'post',
+      targetId: post5.id,
+      reason: 'CONTENIDO_INAPROPIADO',
+      description: 'El texto es insultante y agresivo.',
+      status: 'pending'
+    }
+  ])
+
+  // Caso 3: Un comentario denunciado en el post de Esteban (post1) para probar la moderación por el autor del post.
+  const commentInPost1 = await Comment.findOne({ where: { PostId: post1.id, UserId: lucia.id } })
+  if (commentInPost1) {
+    await Report.create({
+      reporterId: ana.id,
+      targetType: 'comment',
+      targetId: commentInPost1.id,
+      reason: 'ACOSO',
+      description: 'Comentario agresivo e intimidante.',
+      status: 'pending'
+    })
+  }
+
+  console.log('  ✅ Reportes de prueba creados')
 
   // ============================
   // Resumen

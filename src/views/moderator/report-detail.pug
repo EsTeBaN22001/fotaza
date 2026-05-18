@@ -1,0 +1,92 @@
+extends ../layouts/app
+
+block content
+  .mb-4
+    a.btn.btn-outline-secondary.btn-sm(href="/moderator/reports")
+      i.bi.bi-arrow-left
+      |  Volver al panel
+
+  .row.mt-3
+    .col-md-8
+      .card.shadow-sm.mb-4
+        .card-header.bg-dark.text-white
+          h5.mb-0 Contenido Denunciado
+        .card-body
+          if targetType === 'post' && targetData
+            h4= targetData.title
+            p= targetData.description
+            if targetData.images && targetData.images.length
+              .row
+                each img in targetData.images
+                  .col-md-4.mb-3
+                    img.img-fluid.rounded(src=img.url alt="Imagen del post")
+          else if targetType === 'postImage' && targetData
+            h5 Imagen de Post
+            img.img-fluid.rounded.mb-3(src=targetData.url alt="Imagen denunciada")
+            if targetData.Post
+              p.text-muted Perteneciente al post: #{targetData.Post.title}
+          else if targetType === 'comment' && targetData
+            h5 Comentario
+            .p-3.bg-light.rounded
+              p.mb-0= targetData.content
+          else
+            .alert.alert-warning Contenido no encontrado o ya eliminado.
+
+      .card.shadow-sm
+        .card-header.bg-danger.text-white
+          h5.mb-0 Denuncias Activas (#{reports.length})
+        .card-body
+          ul.list-group.list-group-flush
+            each report in reports
+              li.list-group-item
+                .d-flex.justify-content-between.align-items-start
+                  div
+                    strong= report.reason
+                    if report.description
+                      p.mb-1.text-muted= report.description
+                  small.text-muted= new Date(report.created_at).toLocaleDateString()
+                small Denunciante: #{report.Reporter ? report.Reporter.username : 'Desconocido'}
+
+    .col-md-4
+      .card.shadow-sm
+        .card-header
+          h5.mb-0 Acciones del Validador
+        .card-body
+          p.text-muted Autor del contenido: 
+            strong= targetOwner ? targetOwner.username : 'Desconocido'
+          
+          if reports.length && reports[0].status === 'pending'
+            form(action=`/moderator/reports/${reports[0].id}/resolve` method="POST" class="mb-3")
+              .mb-3
+                label.form-label(for="resolutionNotes") Notas de resolución (opcional)
+                textarea#resolutionNotes.form-control(name="resolutionNotes" rows="2")
+              button.btn.btn-danger.w-100(type="submit" onclick="return confirm('¿Seguro que deseas DAR DE BAJA este contenido?');")
+                i.bi.bi-slash-circle
+                |  Aprobar Denuncias (Dar de baja)
+            
+            form(action=`/moderator/reports/${reports[0].id}/dismiss` method="POST")
+              input(type="hidden" name="resolutionNotes" id="dismissNotesInput")
+              button.btn.btn-success.w-100(type="submit" onclick="document.getElementById('dismissNotesInput').value = document.getElementById('resolutionNotes').value;")
+                i.bi.bi-check-circle
+                |  Desestimar Denuncias
+          else
+            .alert.alert-info.mb-3
+              i.bi.bi-info-circle.me-2
+              | Este caso ya no tiene denuncias pendientes.
+            
+            if reports.length
+              .p-3.bg-light.rounded.border
+                h6.fw-bold Detalle de Resolución:
+                p.mb-1
+                  strong Estado: 
+                  if reports[0].status === 'resolved'
+                    span.badge.bg-success Resuelto (Baja)
+                  else
+                    span.badge.bg-secondary Desestimado
+                p.mb-1
+                  strong Moderador: 
+                  span= reports[0].Resolver ? reports[0].Resolver.username : 'Desconocido'
+                if reports[0].resolutionNotes
+                  p.mb-0.mt-2
+                    strong Notas: 
+                    span.text-muted.d-block.bg-white.p-2.rounded.border.small= reports[0].resolutionNotes

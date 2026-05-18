@@ -68,6 +68,12 @@ Bookmark.belongsTo(Post, { onDelete: 'CASCADE' })
 User.belongsToMany(Post, { through: Bookmark, as: 'SavedPosts', onDelete: 'CASCADE' })
 Post.belongsToMany(User, { through: Bookmark, as: 'SavedBy', onDelete: 'CASCADE' })
 
+// 🚩 Reports (Denuncias)
+User.hasMany(Report, { foreignKey: 'reporterId', as: 'reportsMade' })
+Report.belongsTo(User, { foreignKey: 'reporterId', as: 'Reporter' })
+User.hasMany(Report, { foreignKey: 'resolverId', as: 'reportsResolved' })
+Report.belongsTo(User, { foreignKey: 'resolverId', as: 'Resolver' })
+
 module.exports = {
   User,
   Post,

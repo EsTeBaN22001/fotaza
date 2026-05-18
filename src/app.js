@@ -10,6 +10,8 @@ const homeRoutes = require('./routes/home.routes')
 const postRoutes = require('./routes/post.routes')
 const profileRoutes = require('./routes/profile.routes')
 const feedRoutes = require('./routes/feed.routes')
+const reportRoutes = require('./routes/report.routes')
+const moderatorRoutes = require('./routes/moderator.routes')
 
 const { attachUser } = require('./middlewares/authMiddleware')
 
@@ -24,7 +26,7 @@ app.use(cookieParser())
 
 // 📦 Parsers de cuerpo (¡CRÍTICO: antes de method-override!)
 app.use(express.urlencoded({ extended: true }))
-// app.use(express.json()) // ✅ Recomendado para APIs o payloads JSON
+app.use(express.json()) // ✅ Recomendado para APIs o payloads JSON
 
 // 📁 Archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')))
@@ -39,6 +41,8 @@ app.use('/home', homeRoutes)
 app.use('/posts', postRoutes)
 app.use('/profile', profileRoutes)
 app.use('/feed', feedRoutes)
+app.use('/reports', reportRoutes)
+app.use('/moderator', moderatorRoutes)
 
 // 🚀 Iniciar servidor después de sincronizar BD
 sequelize

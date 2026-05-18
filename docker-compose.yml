@@ -42,6 +42,22 @@ services:
     networks:
       - fotaza_network
 
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: fotaza_phpmyadmin
+    restart: always
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=db
+      - PMA_USER=root
+      - PMA_PASSWORD=rootpassword
+    depends_on:
+      - db
+    networks:
+      - fotaza_network
+
 networks:
   fotaza_network:
     driver: bridge

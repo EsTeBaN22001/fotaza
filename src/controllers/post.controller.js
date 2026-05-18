@@ -173,6 +173,10 @@ exports.showEditForm = async (req, res) => {
       return res.redirect(`/profile/${req.user.username}`)
     }
 
+    if (['reported', 'under_review', 'removed'].includes(post.status)) {
+      return res.redirect(`/posts/${post.id}?error=Esta+publicación+se+encuentra+bajo+revisión+y+no+puede+ser+editada`)
+    }
+
     const tags = await Tag.findAll()
 
     res.render('pages/editPost', {
@@ -190,6 +194,11 @@ exports.showEditForm = async (req, res) => {
 // ✏️ Actualizar publicación
 exports.updatePost = async (req, res) => {
   try {
+    const postCheck = await Post.findByPk(req.params.id)
+    if (postCheck && ['reported', 'under_review', 'removed'].includes(postCheck.status)) {
+      return res.redirect(`/posts/${postCheck.id}?error=Esta+publicación+se+encuentra+bajo+revisión+y+no+puede+ser+editada`)
+    }
+
     await postService.updatePost(req)
     res.redirect(`/profile/${req.user.username}?success=Publicación+actualizada+correctamente`)
   } catch (err) {
