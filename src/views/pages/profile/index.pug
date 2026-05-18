@@ -48,7 +48,7 @@ block content
                 if post.images && post.images.length > 0
                   if post.images.length === 1
                     a(href=`/posts/${post.id}`)
-                      img.card-img-top(src=post.images[0].url alt="Post" style="height: 200px; object-fit: cover;")
+                      img.card-img-top(src=`/images/${post.images[0].id}` alt="Post" style="height: 200px; object-fit: cover;")
                   else
                     - const carouselId = 'carousel-profile-' + post.id
                     .carousel.slide(id=carouselId data-bs-ride="carousel")
@@ -57,7 +57,7 @@ block content
                           .carousel-item(class=index === 0 ? 'active' : '')
                             a(href=`/posts/${post.id}`)
                               img.d-block.w-100(
-                                src=img.url
+                                src=`/images/${img.id}`
                                 alt="Post"
                                 style="height: 200px; object-fit: cover;"
                                 loading="lazy"

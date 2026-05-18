@@ -16,7 +16,7 @@ block content
           .col-md-4.mb-4
             .card.h-100.shadow-sm
               if post.images.length > 0
-                img.card-img-top(src=post.images[0].url alt=post.title style="height: 200px; object-fit: cover;")
+                img.card-img-top(src=`/images/${post.images[0].id}` alt=post.title style="height: 200px; object-fit: cover;")
               else
                 .card-img-top.bg-secondary.d-flex.align-items-center.justify-content-center(style="height: 200px;")
                   span.text-white Sin imagen

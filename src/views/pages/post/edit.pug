@@ -26,7 +26,7 @@ block content
           if post.images && post.images.length > 0
             each img in post.images
               .col-4.position-relative
-                img.img-thumbnail(src=img.url style="height: 100px; object-fit: cover; width: 100%;")
+                img.img-thumbnail(src=`/images/${img.id}` style="height: 100px; object-fit: cover; width: 100%;")
                 .form-check.mt-1
                   input.form-check-input(
                     type="checkbox"

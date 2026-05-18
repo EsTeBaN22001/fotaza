@@ -1,13 +1,18 @@
 const sharp = require('sharp')
-const path = require('path')
 
-const optimizeImage = async (inputPath, outputPath, options = {}) => {
+/**
+ * Optimiza una imagen en memoria (redimensión y conversión a WebP).
+ * @param {Buffer} buffer - Buffer binario de la imagen original.
+ * @param {Object} options - Opciones de optimización (width, height, quality).
+ * @returns {Promise<Buffer>} Buffer binario de la imagen optimizada en WebP.
+ */
+const optimizeImage = async (buffer, options = {}) => {
   const { width = 1920, height = 1920, quality = 80 } = options
 
-  await sharp(inputPath)
+  return await sharp(buffer)
     .resize({ width, height, fit: 'inside', withoutEnlargement: true })
     .webp({ quality, effort: 6 })
-    .toFile(outputPath)
+    .toBuffer()
 }
 
 module.exports = { optimizeImage }

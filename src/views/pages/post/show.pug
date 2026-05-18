@@ -15,7 +15,7 @@ block content
             if post.images.length === 1
               a.w-100.h-100.d-flex.align-items-center(href=`/posts/${post.id}` style="text-decoration: none;")
                 img.w-100(
-                  src=post.images[0].url
+                  src=`/images/${post.images[0].id}`
                   alt=post.title
                   style="max-height: 80vh; object-fit: contain;"
                 )
@@ -27,7 +27,7 @@ block content
                     .carousel-item(class=idx === 0 ? 'active' : '')
                       a.w-100.h-100.d-flex.align-items-center(href=`/posts/${post.id}` style="text-decoration: none;")
                         img.d-block.w-100(
-                          src=img.url
+                          src=`/images/${img.id}`
                           alt=`${post.title} - Imagen ${idx + 1}`
                           style="max-height: 80vh; object-fit: contain;"
                         )

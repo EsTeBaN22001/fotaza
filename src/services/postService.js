@@ -1,6 +1,4 @@
-const { Post, PostImage, User } = require('../models')
-const path = require('path')
-const fs = require('fs').promises
+const { Post, PostImage } = require('../models')
 const { optimizeImage } = require('../utils/imageOptimizer')
 
 exports.createPost = async req => {
@@ -35,33 +33,29 @@ exports.createPost = async req => {
       await post.setTags(tagIds, { transaction })
     }
 
-    const uploadDir = path.join(__dirname, '../public/uploads')
     const imagesToSave = []
 
     for (const file of req.files) {
-      const originalPath = path.join(file.destination, file.filename)
-      const baseName = Date.now() + '-' + Math.round(Math.random() * 1e9)
-      const optimizedFileName = `${baseName}.webp`
-      const optimizedPath = path.join(uploadDir, optimizedFileName)
-
-      let finalUrl = `/uploads/${file.filename}`
+      let optimizedBuffer = file.buffer
+      let finalMimeType = file.mimetype
 
       try {
-        await optimizeImage(originalPath, optimizedPath, {
+        // Optimizar y convertir a WebP en memoria
+        optimizedBuffer = await optimizeImage(file.buffer, {
           width: 1920,
           height: 1920,
           quality: 80
         })
-
-        finalUrl = `/uploads/${optimizedFileName}`
-        await fs.unlink(originalPath)
-        console.log(`✅ Optimizada: ${file.originalname} → ${optimizedFileName}`)
+        finalMimeType = 'image/webp'
+        console.log(`✅ Imagen optimizada en memoria: ${file.originalname}`)
       } catch (optErr) {
-        console.error(`⚠️ Fallo optimizando ${file.originalname}:`, optErr.message)
+        console.error(`⚠️ Fallo optimizando en memoria ${file.originalname}:`, optErr.message)
       }
 
       imagesToSave.push({
-        url: finalUrl,
+        filename: file.originalname,
+        mimeType: finalMimeType,
+        imageData: optimizedBuffer,
         license: 'copyright',
         watermark: null,
         PostId: post.id
@@ -75,7 +69,6 @@ exports.createPost = async req => {
     return post
   } catch (err) {
     await transaction.rollback()
-
     throw err
   }
 }
@@ -124,49 +117,39 @@ exports.updatePost = async req => {
       await post.setTags([], { transaction })
     }
 
-    const uploadDir = path.join(__dirname, '../public/uploads')
-
+    // Eliminar imágenes seleccionadas de la base de datos
     if (removedImagesArray.length > 0) {
       const imagesToRemove = post.images.filter(img => removedImagesArray.includes(img.id.toString()))
 
       for (const img of imagesToRemove) {
-        const fileName = path.basename(img.url)
-        const filePath = path.join(uploadDir, fileName)
-
-        if (await fs.stat(filePath).catch(() => false)) {
-          await fs.unlink(filePath)
-        }
-
         await img.destroy({ transaction })
       }
     }
 
+    // Procesar nuevas imágenes subidas en memoria
     if (req.files && req.files.length > 0) {
       const imagesToSave = []
 
       for (const file of req.files) {
-        const originalPath = path.join(file.destination, file.filename)
-        const baseName = Date.now() + '-' + Math.round(Math.random() * 1e9)
-        const optimizedFileName = `${baseName}.webp`
-        const optimizedPath = path.join(uploadDir, optimizedFileName)
-
-        let finalUrl = `/uploads/${file.filename}`
+        let optimizedBuffer = file.buffer
+        let finalMimeType = file.mimetype
 
         try {
-          await optimizeImage(originalPath, optimizedPath, {
+          optimizedBuffer = await optimizeImage(file.buffer, {
             width: 1920,
             height: 1920,
             quality: 80
           })
-
-          finalUrl = `/uploads/${optimizedFileName}`
-          await fs.unlink(originalPath)
+          finalMimeType = 'image/webp'
+          console.log(`✅ Nueva imagen optimizada en memoria: ${file.originalname}`)
         } catch (optErr) {
-          console.error(`⚠️ Fallo optimizando ${file.originalname}:`, optErr.message)
+          console.error(`⚠️ Fallo optimizando en memoria ${file.originalname}:`, optErr.message)
         }
 
         imagesToSave.push({
-          url: finalUrl,
+          filename: file.originalname,
+          mimeType: finalMimeType,
+          imageData: optimizedBuffer,
           license: 'copyright',
           watermark: null,
           PostId: post.id
@@ -197,16 +180,7 @@ exports.deletePost = async req => {
 
   const transaction = await Post.sequelize.transaction()
   try {
-    const uploadDir = path.join(__dirname, '../public/uploads')
-
-    for (const img of post.images) {
-      const fileName = path.basename(img.url)
-      const filePath = path.join(uploadDir, fileName)
-      if (await fs.stat(filePath).catch(() => false)) {
-        await fs.unlink(filePath)
-      }
-    }
-
+    // Eliminar todas las imágenes asociadas en base de datos (se destruyen las filas, no hay archivos)
     await PostImage.destroy({ where: { PostId: postId }, transaction })
     await post.destroy({ transaction })
 

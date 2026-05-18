@@ -1,6 +1,8 @@
 require('dotenv').config()
 const sequelize = require('../src/config/db')
 const bcrypt = require('bcrypt')
+const fs = require('fs')
+const path = require('path')
 
 const {
   User,
@@ -16,18 +18,35 @@ const {
   Report
 } = require('../src/models')
 
+// Nombres de archivos de prueba existentes en src/public/uploads/
 const IMG = {
-  sunset: '/uploads/seed_landscape_sunset.webp',
-  butterfly: '/uploads/seed_butterfly_macro.webp',
-  city: '/uploads/seed_city_night.webp',
-  forest: '/uploads/seed_forest_path.webp',
-  architecture: '/uploads/seed_architecture.webp',
-  ocean: '/uploads/seed_ocean_waves.webp',
-  alley: '/uploads/seed_european_alley.webp'
+  sunset: 'seed_landscape_sunset.webp',
+  butterfly: 'seed_butterfly_macro.webp',
+  city: 'seed_city_night.webp',
+  forest: 'seed_forest_path.webp',
+  architecture: 'seed_architecture.webp',
+  ocean: 'seed_ocean_waves.webp',
+  alley: 'seed_european_alley.webp'
+}
+
+/**
+ * Helper para leer una imagen local del disco y convertirla en estructura de base de datos
+ */
+function getSeedImage(filename) {
+  const filePath = path.join(__dirname, '../src/public/uploads', filename)
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Archivo de seed no encontrado: ${filePath}`)
+  }
+  const buffer = fs.readFileSync(filePath)
+  return {
+    filename: filename,
+    mimeType: 'image/webp',
+    imageData: buffer
+  }
 }
 
 async function seed() {
-  console.log('🌱 Iniciando seed...\n')
+  console.log('🌱 Iniciando seed (MySQL BLOB/LONGBLOB)...\n')
 
   await sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
   await sequelize.sync({ force: true })
@@ -76,7 +95,7 @@ async function seed() {
   }
   console.log(`  ✅ ${tagNames.length} tags creados`)
 
-  console.log('\n📸 Creando publicaciones...')
+  console.log('\n📸 Creando publicaciones con imágenes BLOB...')
 
   const post1 = await Post.create({
     title: 'Atardecer en las montañas',
@@ -85,8 +104,8 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.bulkCreate([
-    { url: IMG.sunset, license: 'copyright', PostId: post1.id },
-    { url: IMG.forest, license: 'copyright', PostId: post1.id }
+    { ...getSeedImage(IMG.sunset), license: 'copyright', PostId: post1.id },
+    { ...getSeedImage(IMG.forest), license: 'copyright', PostId: post1.id }
   ])
   await post1.addTags([tags['naturaleza'], tags['paisaje']])
 
@@ -97,7 +116,7 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.create({
-    url: IMG.butterfly,
+    ...getSeedImage(IMG.butterfly),
     license: 'free',
     PostId: post2.id
   })
@@ -110,8 +129,8 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.bulkCreate([
-    { url: IMG.city, license: 'copyright', PostId: post3.id },
-    { url: IMG.architecture, license: 'copyright', PostId: post3.id }
+    { ...getSeedImage(IMG.city), license: 'copyright', PostId: post3.id },
+    { ...getSeedImage(IMG.architecture), license: 'copyright', PostId: post3.id }
   ])
   await post3.addTags([tags['ciudad'], tags['nocturna'], tags['arquitectura']])
 
@@ -122,7 +141,7 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.create({
-    url: IMG.forest,
+    ...getSeedImage(IMG.forest),
     license: 'free',
     PostId: post4.id
   })
@@ -135,9 +154,9 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.bulkCreate([
-    { url: IMG.architecture, license: 'copyright', PostId: post5.id },
-    { url: IMG.city, license: 'copyright', PostId: post5.id },
-    { url: IMG.alley, license: 'copyright', PostId: post5.id }
+    { ...getSeedImage(IMG.architecture), license: 'copyright', PostId: post5.id },
+    { ...getSeedImage(IMG.city), license: 'copyright', PostId: post5.id },
+    { ...getSeedImage(IMG.alley), license: 'copyright', PostId: post5.id }
   ])
   await post5.addTags([tags['arquitectura'], tags['ciudad']])
 
@@ -148,7 +167,7 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.create({
-    url: IMG.ocean,
+    ...getSeedImage(IMG.ocean),
     license: 'free',
     PostId: post6.id
   })
@@ -161,8 +180,8 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.bulkCreate([
-    { url: IMG.alley, license: 'copyright', PostId: post7.id },
-    { url: IMG.sunset, license: 'copyright', PostId: post7.id }
+    { ...getSeedImage(IMG.alley), license: 'copyright', PostId: post7.id },
+    { ...getSeedImage(IMG.sunset), license: 'copyright', PostId: post7.id }
   ])
   await post7.addTags([tags['viajes'], tags['ciudad'], tags['arte']])
 
@@ -173,7 +192,7 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.create({
-    url: IMG.butterfly,
+    ...getSeedImage(IMG.butterfly),
     license: 'free',
     PostId: post8.id
   })
@@ -186,14 +205,14 @@ async function seed() {
     commentsEnabled: false
   })
   await PostImage.bulkCreate([
-    { url: IMG.ocean, license: 'free', PostId: post9.id },
-    { url: IMG.sunset, license: 'free', PostId: post9.id },
-    { url: IMG.forest, license: 'free', PostId: post9.id }
+    { ...getSeedImage(IMG.ocean), license: 'free', PostId: post9.id },
+    { ...getSeedImage(IMG.sunset), license: 'free', PostId: post9.id },
+    { ...getSeedImage(IMG.forest), license: 'free', PostId: post9.id }
   ])
   await post9.addTags([tags['naturaleza'], tags['paisaje']])
 
   const allPosts = [post1, post2, post3, post4, post5, post6, post7, post8, post9]
-  console.log('  ✅ 9 publicaciones creadas (con imágenes y tags)')
+  console.log('  ✅ 9 publicaciones creadas (con imágenes en DB y tags)')
 
   console.log('\n💬 Creando comentarios...')
 
@@ -242,7 +261,6 @@ async function seed() {
   console.log('\n🤝 Creando relaciones de seguimiento...')
 
   await Follow.bulkCreate([
-
     { follower_id: esteban.id, following_id: lucia.id },
     { follower_id: esteban.id, following_id: marcos.id },
 
@@ -267,7 +285,6 @@ async function seed() {
   const ratingUsers = [lucia, marcos, ana, esteban]
 
   for (const img of allImages) {
-
     const post = await Post.findByPk(img.PostId)
     const eligibleUsers = ratingUsers.filter(u => u.id !== post.UserId)
 
@@ -287,7 +304,6 @@ async function seed() {
   const likesData = []
 
   for (const post of allPosts) {
-
     const numLikes = 1 + Math.floor(Math.random() * 4)
     const shuffledUsers = [...allUsers].sort(() => 0.5 - Math.random())
 
@@ -407,7 +423,7 @@ async function seed() {
   console.log('='.repeat(50))
   console.log('\n📊 Resumen:')
   console.log('  👤 4 usuarios')
-  console.log('  📸 9 publicaciones (con imágenes variadas)')
+  console.log('  📸 9 publicaciones (con imágenes variadas en DB)')
   console.log('  💬 26 comentarios')
   console.log('  🏷️  9 tags')
   console.log('  🤝 9 relaciones de seguimiento')
@@ -416,10 +432,10 @@ async function seed() {
   console.log('  🔔 4 notificaciones')
   console.log('  📁 3 colecciones')
   console.log('\n🔑 Credenciales:')
-  console.log('  esteban22001 / esteban22001 (validator)')
-  console.log('  lucia_foto   / password123')
-  console.log('  marcos_lens  / password123')
-  console.log('  ana_captures / password123')
+  console.log(`  ${esteban.email} / password123 (validator)`)
+  console.log(`  ${lucia.email} / password123`)
+  console.log(`  ${marcos.email} / password123`)
+  console.log(`  ${ana.email} / password123`)
   console.log('')
 
   process.exit(0)
