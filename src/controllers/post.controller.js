@@ -5,7 +5,7 @@ const notificationService = require('../services/notificationService')
 exports.showCreate = async (req, res) => {
   try {
     const tags = await Tag.findAll()
-    res.render('pages/createPost', {
+    res.render('pages/post/create', {
       old: {},
       tags
     })
@@ -133,14 +133,14 @@ exports.createPost = async (req, res) => {
     return res.redirect(`/profile/${req.user.username}?success=Publicación+creada+correctamente`)
   } catch (err) {
     if (err.code === 'LIMIT_FILE_SIZE') {
-      return res.render('pages/createPost', {
+      return res.render('pages/post/create', {
         errors: [{ message: 'La imagen es muy grande. Máximo 10MB por archivo.' }],
         old: req.body
       })
     }
 
     if (err.code === 'LIMIT_FILE_COUNT') {
-      return res.render('pages/createPost', {
+      return res.render('pages/post/create', {
         errors: [{ message: 'Máximo 5 imágenes por publicación.' }],
         old: req.body
       })
@@ -155,7 +155,7 @@ exports.createPost = async (req, res) => {
 
     const tags = await Tag.findAll()
 
-    res.render('pages/createPost', {
+    res.render('pages/post/create', {
       errors: [{ message: err.message || 'Error al crear la publicación' }],
       old: req.body,
       tags
@@ -182,7 +182,7 @@ exports.showEditForm = async (req, res) => {
 
     const tags = await Tag.findAll()
 
-    res.render('pages/editPost', {
+    res.render('pages/post/edit', {
       post,
       tags,
       username: req.user.username,
@@ -217,7 +217,7 @@ exports.updatePost = async (req, res) => {
     if (err.code === 'LIMIT_FILE_SIZE') errorMsg = 'Una imagen es muy grande. Máximo 10MB por archivo.'
     if (err.code === 'LIMIT_FILE_COUNT') errorMsg = 'Has excedido el límite de imágenes permitidas.'
 
-    res.render('pages/editPost', {
+    res.render('pages/post/edit', {
       post: post || { id: req.params.id, title: req.body.title, description: req.body.description },
       tags,
       username: req.user.username,

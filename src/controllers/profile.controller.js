@@ -20,14 +20,14 @@ exports.getMyPosts = async (req, res) => {
     const errors = req.query.error ? [{ message: decodeURIComponent(req.query.error) }] : []
     const success = req.query.success ? decodeURIComponent(req.query.success) : null
 
-    res.render('pages/profile', {
+    res.render('pages/profile/my-posts', {
       posts,
       user: req.user,
       errors,
       success
     })
   } catch (err) {
-    res.render('pages/profile', {
+    res.render('pages/profile/my-posts', {
       posts: [],
       user: req.user,
       errors: [{ message: 'No se pudieron cargar tus publicaciones' }],
@@ -44,7 +44,7 @@ exports.getProfile = async (req, res) => {
     })
 
     if (!profileUser) {
-      return res.status(404).render('errors/404', { title: 'Usuario no encontrado' })
+      return res.status(404).render('pages/error', { status: 404, message: 'Usuario no encontrado', errors: [] })
     }
 
     const followerCount = await profileUser.countFollowers()
@@ -85,16 +85,17 @@ exports.getProfile = async (req, res) => {
       isFollowing
     })
   } catch (err) {
-    res.status(500).render('errors', {
-      title: 'Error interno',
-      message: 'No se pudo cargar el perfil. Revisa la consola del servidor para más detalles.'
+    res.status(500).render('pages/error', {
+      status: 500,
+      message: 'No se pudo cargar el perfil. Revisa la consola del servidor para más detalles.',
+      errors: []
     })
   }
 }
 
 exports.getFollowersList = async (req, res) => {
   const user = await User.findOne({ where: { username: req.params.username } })
-  if (!user) return res.status(404).render('errors/404')
+  if (!user) return res.status(404).render('pages/error', { status: 404, message: 'Usuario no encontrado', errors: [] })
 
   const followers = await user.getFollowers({
     attributes: ['id', 'username'],
@@ -111,7 +112,7 @@ exports.getFollowersList = async (req, res) => {
 
 exports.getFollowingList = async (req, res) => {
   const user = await User.findOne({ where: { username: req.params.username } })
-  if (!user) return res.status(404).render('errors/404')
+  if (!user) return res.status(404).render('pages/error', { status: 404, message: 'Usuario no encontrado', errors: [] })
 
   const following = await user.getFollowing({
     attributes: ['id', 'username'],

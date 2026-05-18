@@ -8,10 +8,10 @@ const { validateInputs } = require('../middlewares/validateInputs')
 
 router.get('/login', controller.getLogin)
 
-router.post('/login', sanitizeLoginUser, validateInputs('pages/login'), controller.postlogin)
+router.post('/login', sanitizeLoginUser, validateInputs('pages/auth/login'), controller.postlogin)
 
 router.get('/register', controller.getRegister)
-router.post('/register', sanitizeRegisterUser, validateInputs('pages/register'), controller.postRegister)
+router.post('/register', sanitizeRegisterUser, validateInputs('pages/auth/register'), controller.postRegister)
 
 router.get('/logout', controller.logout)
 

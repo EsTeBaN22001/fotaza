@@ -1,4 +1,4 @@
-extends ../layouts/auth
+extends ../../layouts/auth
 
 block content
   .container
@@ -8,19 +8,10 @@ block content
         .card.shadow
           .card-body
 
-            h3.text-center.mb-4 Registro
+            h3.text-center.mb-4 Login
 
-            form(method="POST" action="/auth/register")
+            form(method="POST" action="/auth/login")
               input(type="hidden" name="returnTo" value=returnTo)
-
-              .mb-3
-                label.form-label Usuario
-                input.form-control(
-                  type="text"
-                  name="username"
-                  placeholder="Usuario"
-                  value=old.username
-                )
 
               .mb-3
                 label.form-label Email
@@ -28,7 +19,7 @@ block content
                   type="email"
                   name="email"
                   placeholder="Email"
-                  value=old.email
+                  value=old && old.email
                 )
 
               .mb-3
@@ -39,4 +30,4 @@ block content
                   placeholder="Password"
                 )
 
-              button.btn.btn-primary.w-100(type="submit") Registrarse
+              button.btn.btn-primary.w-100(type="submit") Login

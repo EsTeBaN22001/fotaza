@@ -1,7 +1,7 @@
 const authService = require('../services/authService')
 
 exports.getLogin = (req, res) => {
-  res.render('pages/login', {
+  res.render('pages/auth/login', {
     errors: [],
     old: {},
     returnTo: req.query.returnTo || ''
@@ -16,7 +16,7 @@ exports.postlogin = async (req, res) => {
     res.cookie('token', token)
     res.redirect(returnTo)
   } catch (err) {
-    res.render('pages/login', {
+    res.render('pages/auth/login', {
       errors: [{ message: err.message }],
       old: req.body,
       returnTo: req.body.returnTo || ''
@@ -25,7 +25,7 @@ exports.postlogin = async (req, res) => {
 }
 
 exports.getRegister = (req, res) => {
-  res.render('pages/register', {
+  res.render('pages/auth/register', {
     errors: [],
     old: {},
     returnTo: req.query.returnTo || ''
@@ -36,14 +36,14 @@ exports.postRegister = async (req, res) => {
   try {
     await authService.register(req.body)
 
-    return res.render('pages/login', {
+    return res.render('pages/auth/login', {
       success: 'Usuario registrado correctamente',
       errors: [],
       old: {},
       returnTo: req.body.returnTo || ''
     })
   } catch (err) {
-    return res.render('pages/register', {
+    return res.render('pages/auth/register', {
       errors: [{ message: err.message }],
       old: req.body,
       returnTo: req.body.returnTo || ''

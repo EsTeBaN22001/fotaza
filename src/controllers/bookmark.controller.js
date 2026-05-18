@@ -63,7 +63,7 @@ exports.getSaved = async (req, res) => {
 
     const posts = bookmarks.map(b => b.Post).filter(Boolean)
 
-    res.render('pages/saved', { posts })
+    res.render('pages/profile/saved', { posts })
   } catch (err) {
     console.error('❌ Error cargando guardados:', err)
     res.status(500).render('pages/error', {
