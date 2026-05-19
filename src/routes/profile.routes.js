@@ -3,19 +3,10 @@ const router = express.Router()
 const { authRequired } = require('../middlewares/authMiddleware')
 const { sanitizeUsername } = require('../middlewares/validators/userValidators')
 const profileController = require('../controllers/profile.controller')
-const postController = require('../controllers/post.controller')
+const bookmarkController = require('../controllers/bookmark.controller')
 
 router.get('/my-posts', authRequired, profileController.getMyPosts)
-
-const bookmarkController = require('../controllers/bookmark.controller')
 router.get('/saved', authRequired, bookmarkController.getSaved)
-
-const upload = require('../middlewares/uploadMiddleware')
-
-router.get('/edit/:id', authRequired, postController.showEditForm)
-router.post('/edit/:id', authRequired, upload.array('newImages', 5), postController.updatePost)
-
-router.post('/delete/:id', authRequired, postController.deletePost)
 
 router.get('/me', authRequired, (req, res) => res.redirect(`/profile/${req.user.username}`))
 

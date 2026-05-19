@@ -10,7 +10,7 @@ block content
           each error in errors
             li= error.message
 
-    form(method='POST', action=`/profile/edit/${post.id}`, enctype='multipart/form-data')
+    form(method='POST', action=`/posts/${post.id}/edit`, enctype='multipart/form-data')
       
       .mb-3
         label(for='title') Título

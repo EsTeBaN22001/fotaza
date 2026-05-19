@@ -12,6 +12,11 @@ router.post('/', authRequired, upload.array('images', 5), controller.createPost)
 
 router.get('/:id', authRequired, controller.showPost)
 
+router.get('/:id/edit', authRequired, controller.showEditForm)
+router.post('/:id/edit', authRequired, upload.array('newImages', 5), controller.updatePost)
+
+router.post('/:id/delete', authRequired, controller.deletePost)
+
 router.post('/:id/comments', authRequired, controller.createComment)
 router.post('/:id/comments/:commentId/delete', authRequired, controller.deleteComment)
 

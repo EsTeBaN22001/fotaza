@@ -106,9 +106,9 @@ block content
 
                   .d-flex.justify-content-between.mt-3
                     if isOwner
-                      a.btn.btn-sm.btn-outline-primary(href=`/profile/edit/${post.id}`) ✏️ Editar
+                      a.btn.btn-sm.btn-outline-primary(href=`/posts/${post.id}/edit`) ✏️ Editar
                       
-                      form(action=`/profile/delete/${post.id}`, method='POST', class='d-inline')
+                      form(action=`/posts/${post.id}/delete`, method='POST', class='d-inline')
                         button.btn.btn-sm.btn-outline-danger(type='submit', onclick="return confirm('¿Eliminar esta publicación y sus imágenes?')")
                           | 🗑️ Eliminar
                     else

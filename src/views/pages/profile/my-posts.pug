@@ -39,9 +39,9 @@ block content
                     |  me gusta
 
                 .d-flex.justify-content-between.mt-3
-                  a.btn.btn-sm.btn-outline-primary(href=`/profile/edit/${post.id}`) ✏️ Editar
+                  a.btn.btn-sm.btn-outline-primary(href=`/posts/${post.id}/edit`) ✏️ Editar
                   
-                  form(action=`/profile/delete/${post.id}`, method='POST')
+                  form(action=`/posts/${post.id}/delete`, method='POST')
                     button.btn.btn-sm.btn-outline-danger(type='submit', onclick="return confirm('¿Eliminar esta publicación y sus imágenes?')")
                       | 🗑️ Eliminar
 

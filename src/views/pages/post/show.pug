@@ -67,10 +67,10 @@ block content
                   button.btn.btn-sm.btn-link.text-muted(data-bs-toggle="dropdown")
                     i.bi.bi-three-dots
                   ul.dropdown-menu.dropdown-menu-end
-                    li: a.dropdown-item(href=`/profile/edit/${post.id}`) Editar
+                    li: a.dropdown-item(href=`/posts/${post.id}/edit`) Editar
                     li: hr.dropdown-divider
                     li
-                      form(action=`/profile/delete/${post.id}` method="POST")
+                      form(action=`/posts/${post.id}/delete` method="POST")
                         button.dropdown-item.text-danger(type="submit" onclick="return confirm('¿Eliminar?')") Eliminar
               else if user
                 .dropdown
