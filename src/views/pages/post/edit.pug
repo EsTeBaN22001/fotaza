@@ -2,7 +2,9 @@ extends ../../layouts/app
 
 block content
   .container.mt-4
-    h2.mb-4 ✏️ Editar Publicación
+    h2.mb-4
+      i.bi.bi-pencil-square.me-2
+      | Editar Publicación
 
     if errors && errors.length > 0
       .alert.alert-danger
@@ -13,44 +15,111 @@ block content
     form(method='POST', action=`/posts/${post.id}/edit`, enctype='multipart/form-data')
       
       .mb-3
-        label(for='title') Título
+        label.form-label.fw-semibold(for='title') Título
         input.form-control(type='text', id='title', name='title', value=old.title || post.title, required)
 
       .mb-3
-        label(for='description') Descripción
+        label.form-label.fw-semibold(for='description') Descripción
         textarea.form-control(id='description', name='description', rows='4', required)= old.description || post.description
 
-      .mb-3
-        label.form-label Imágenes actuales (Selecciona las que quieras eliminar)
-        .row.g-2
+      .mb-4
+        label.form-label.fw-semibold
+          i.bi.bi-images.me-1
+          | Imágenes actuales
+        p.text-muted.small Marcá las imágenes que querés eliminar. También podés cambiar la licencia de cada imagen.
+        .row.g-3
           if post.images && post.images.length > 0
             each img in post.images
-              .col-4.position-relative
-                img.img-thumbnail(src=`/images/${img.id}` style="height: 100px; object-fit: cover; width: 100%;")
-                .form-check.mt-1
-                  input.form-check-input(
-                    type="checkbox"
-                    name="removedImages"
-                    value=img.id
-                    id=`remove-img-${img.id}`
-                    checked=(old.removedImages && (Array.isArray(old.removedImages) ? old.removedImages.includes(img.id.toString()) : old.removedImages === img.id.toString()))
-                  )
-                  label.form-check-label.text-danger(for=`remove-img-${img.id}`) Eliminar
+              .col-md-4
+                .card.border-2(id=`card-img-${img.id}`)
+                  .position-relative
+                    img.card-img-top(
+                      src=`/images/${img.id}`
+                      style="height: 140px; object-fit: cover;"
+                      alt="Imagen de la publicación"
+                    )
+                    //- Badge de licencia actual
+                    if img.license === 'copyright'
+                      span.badge.bg-warning.text-dark.position-absolute.top-0.end-0.m-1
+                        i.bi.bi-c-circle.me-1
+                        | Copyright
+                    else
+                      span.badge.bg-success.position-absolute.top-0.end-0.m-1
+                        i.bi.bi-unlock.me-1
+                        | Libre
+                  .card-body.p-2
+                    //- ID oculto para tracking
+                    input(type="hidden" name="existingImageId" value=img.id)
+
+                    //- Control de licencia
+                    .mb-2
+                      label.form-label.small.fw-semibold Licencia
+                      .d-flex.gap-2
+                        .form-check
+                          input.form-check-input.existing-license-radio(
+                            type="radio"
+                            name="existingLicense"
+                            value="copyright"
+                            id=`elc_copy_${img.id}`
+                            data-imgid=img.id
+                            checked=(img.license === 'copyright')
+                          )
+                          label.form-check-label.small(for=`elc_copy_${img.id}`) Copyright
+                        .form-check
+                          input.form-check-input.existing-license-radio(
+                            type="radio"
+                            name="existingLicense"
+                            value="free"
+                            id=`elc_free_${img.id}`
+                            data-imgid=img.id
+                            checked=(img.license === 'free')
+                          )
+                          label.form-check-label.small(for=`elc_free_${img.id}`) Libre
+
+                    //- Campo de marca de agua
+                    .existing-wm-field(
+                      id=`ewm_${img.id}`
+                      style=img.license === 'copyright' ? '' : 'display:none'
+                    )
+                      input.form-control.form-control-sm(
+                        type="text"
+                        name="existingWatermark"
+                        value=img.watermark || ''
+                        placeholder="Marca de agua (opcional)"
+                        maxlength="60"
+                      )
+                      small.text-muted.d-block Se re-aplicará al guardar si hay texto.
+
+                    //- Checkbox de eliminar
+                    .form-check.mt-2
+                      input.form-check-input.remove-img-cb(
+                        type="checkbox"
+                        name="removedImages"
+                        value=img.id
+                        id=`remove-img-${img.id}`
+                        checked=(old.removedImages && (Array.isArray(old.removedImages) ? old.removedImages.includes(img.id.toString()) : old.removedImages === img.id.toString()))
+                      )
+                      label.form-check-label.text-danger.small(for=`remove-img-${img.id}`)
+                        i.bi.bi-trash.me-1
+                        | Eliminar imagen
           else
             p.text-muted No hay imágenes actuales.
 
-      .mb-3
-        label.form-label Agregar nuevas imágenes (Máximo 5 en total)
-        input.form-control(
+      .mb-4
+        label.form-label.fw-semibold
+          i.bi.bi-plus-circle.me-1
+          | Agregar nuevas imágenes (Máximo 5 en total)
+        input.form-control#newImageInput(
           type="file"
           name="newImages"
           multiple
           accept="image/*"
         )
+        #newImagePreviewContainer.mt-3
 
       if tags && tags.length > 0
         .mb-3
-          label.form-label Etiquetas (Tags)
+          label.form-label.fw-semibold Etiquetas (Tags)
           .d-flex.flex-wrap.gap-2
             each tag in tags
               - const isCheckedByOld = old.tags && (Array.isArray(old.tags) ? old.tags.includes(tag.id.toString()) : old.tags === tag.id.toString())
@@ -78,5 +147,102 @@ block content
           label.form-check-label(for="commentsEnabled") Habilitar comentarios en esta publicación
 
       .d-flex.gap-2
-        button.btn.btn-primary(type='submit') 💾 Guardar cambios
-        a.btn.btn-secondary(href=`/profile/${username}`) ❌ Cancelar
+        button.btn.btn-primary(type='submit')
+          i.bi.bi-floppy.me-1
+          | Guardar cambios
+        a.btn.btn-secondary(href=`/profile/${username}`)
+          i.bi.bi-x.me-1
+          | Cancelar
+
+  style.
+    .existing-wm-field input { font-size: 0.82rem; }
+    .card.border-danger-subtle { border-color: #f8d7da !important; }
+    .img-preview-thumb-sm {
+      width: 70px;
+      height: 55px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+  script.
+    // Toggle watermark field for existing images
+    document.querySelectorAll('.existing-license-radio').forEach(radio => {
+      radio.addEventListener('change', function () {
+        const imgId = this.dataset.imgid
+        const wmField = document.getElementById(`ewm_${imgId}`)
+        if (this.value === 'copyright') {
+          wmField.style.display = ''
+        } else {
+          wmField.style.display = 'none'
+          wmField.querySelector('input').value = ''
+        }
+      })
+    })
+
+    // Toggle card style when removing
+    document.querySelectorAll('.remove-img-cb').forEach(cb => {
+      cb.addEventListener('change', function () {
+        const card = document.getElementById(`card-img-${this.value}`)
+        if (this.checked) {
+          card.style.opacity = '0.4'
+          card.style.outline = '2px solid red'
+        } else {
+          card.style.opacity = ''
+          card.style.outline = ''
+        }
+      })
+    })
+
+    // Preview nuevas imágenes con control de licencia
+    const newImageInput = document.getElementById('newImageInput')
+    const newPreviewContainer = document.getElementById('newImagePreviewContainer')
+
+    newImageInput.addEventListener('change', function () {
+      newPreviewContainer.innerHTML = ''
+      const files = Array.from(this.files)
+      if (files.length === 0) return
+
+      const heading = document.createElement('h6')
+      heading.className = 'fw-semibold mb-3 text-muted small'
+      heading.innerHTML = '<i class="bi bi-sliders me-1"></i> Licencia para imágenes nuevas'
+      newPreviewContainer.appendChild(heading)
+
+      files.forEach((file, idx) => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          const card = document.createElement('div')
+          card.className = 'd-flex align-items-start gap-2 mb-3 p-2 border rounded'
+          card.innerHTML = `
+            <img src="${e.target.result}" class="img-preview-thumb-sm" alt="Preview" />
+            <div class="flex-grow-1">
+              <p class="small fw-semibold mb-1">${file.name}</p>
+              <div class="d-flex gap-3 mb-1">
+                <div class="form-check">
+                  <input class="form-check-input new-lic-radio" type="radio" name="license"
+                         value="copyright" id="nlc_copy_${idx}" checked data-nidx="${idx}">
+                  <label class="form-check-label small" for="nlc_copy_${idx}">Copyright</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input new-lic-radio" type="radio" name="license"
+                         value="free" id="nlc_free_${idx}" data-nidx="${idx}">
+                  <label class="form-check-label small" for="nlc_free_${idx}">Libre</label>
+                </div>
+              </div>
+              <div class="new-wm-field" id="nwm_${idx}">
+                <input type="text" class="form-control form-control-sm" name="watermark"
+                       placeholder="Marca de agua (opcional)" maxlength="60" />
+              </div>
+            </div>
+          `
+          newPreviewContainer.appendChild(card)
+          card.querySelectorAll('.new-lic-radio').forEach(r => {
+            r.addEventListener('change', function () {
+              const wm = document.getElementById(`nwm_${this.dataset.nidx}`)
+              wm.style.display = this.value === 'copyright' ? '' : 'none'
+              if (this.value === 'free') wm.querySelector('input').value = ''
+            })
+          })
+        }
+        reader.readAsDataURL(file)
+      })
+    })

@@ -43,6 +43,7 @@ CREATE TABLE images (
   filename VARCHAR(255) NULL,
   mimeType VARCHAR(100) NOT NULL,
   imageData LONGBLOB NOT NULL,
+  originalData LONGBLOB NULL,
   license ENUM('copyright','free') NOT NULL,
   watermark VARCHAR(255),
   post_id INT NOT NULL,
@@ -89,19 +90,21 @@ CREATE TABLE comments (
 );
 
 -- ============================
--- RATINGS
+-- RATINGS (valoración por publicación, no por imagen)
 -- ============================
 CREATE TABLE ratings (
   id INT AUTO_INCREMENT PRIMARY KEY,
   value INT NOT NULL CHECK (value BETWEEN 1 AND 5),
-  user_id INT NOT NULL,
-  image_id INT NOT NULL,
+  UserId INT NOT NULL,
+  PostId INT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  UNIQUE(user_id, image_id),
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_user_post_rating (UserId, PostId),
+  FOREIGN KEY (UserId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (PostId) REFERENCES posts(id) ON DELETE CASCADE
 );
+
+CREATE INDEX idx_ratings_post ON ratings(PostId);
 
 -- ============================
 -- REPORTS (IMÁGENES / COMENTARIOS)
@@ -171,17 +174,36 @@ CREATE TABLE collection_posts (
 );
 
 -- ============================
--- INTEREST (ME INTERESA)
+-- INTEREST (ME INTERESA - por publicación)
 -- ============================
 CREATE TABLE interests (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  user_id INT,
-  image_id INT,
+  UserId INT NOT NULL,
+  PostId INT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_user_post_interest (UserId, PostId),
+  FOREIGN KEY (UserId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (PostId) REFERENCES posts(id) ON DELETE CASCADE
 );
+
+-- ============================
+-- MESSAGES (mensajería privada 1-a-1)
+-- ============================
+CREATE TABLE messages (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  content TEXT NOT NULL,
+  senderId INT NOT NULL,
+  receiverId INT NOT NULL,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (senderId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (receiverId) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_messages_sender ON messages(senderId);
+CREATE INDEX idx_messages_receiver ON messages(receiverId);
 
 -- ============================
 -- DATOS DE PRUEBA

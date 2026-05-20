@@ -3,6 +3,7 @@ const sequelize = require('../src/config/db')
 const bcrypt = require('bcrypt')
 const fs = require('fs')
 const path = require('path')
+const { applyWatermark } = require('../src/utils/watermarkService')
 
 const {
   User,
@@ -32,16 +33,25 @@ const IMG = {
 /**
  * Helper para leer una imagen local del disco y convertirla en estructura de base de datos
  */
-function getSeedImage(filename) {
+async function getSeedImage(filename, license = 'free', watermarkText = null) {
   const filePath = path.join(__dirname, '../src/public/uploads', filename)
   if (!fs.existsSync(filePath)) {
     throw new Error(`Archivo de seed no encontrado: ${filePath}`)
   }
   const buffer = fs.readFileSync(filePath)
+  
+  let finalData = buffer
+  if (license === 'copyright' && watermarkText) {
+    finalData = await applyWatermark(buffer, watermarkText)
+  }
+
   return {
     filename: filename,
     mimeType: 'image/webp',
-    imageData: buffer
+    imageData: finalData,
+    originalData: buffer,
+    license,
+    watermark: watermarkText
   }
 }
 
@@ -104,8 +114,8 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.bulkCreate([
-    { ...getSeedImage(IMG.sunset), license: 'copyright', PostId: post1.id },
-    { ...getSeedImage(IMG.forest), license: 'copyright', PostId: post1.id }
+    { ...(await getSeedImage(IMG.sunset, 'copyright', 'ESTEBAN PH')), PostId: post1.id },
+    { ...(await getSeedImage(IMG.forest, 'copyright', 'FOTAZA DEMO')), PostId: post1.id }
   ])
   await post1.addTags([tags['naturaleza'], tags['paisaje']])
 
@@ -116,8 +126,7 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.create({
-    ...getSeedImage(IMG.butterfly),
-    license: 'free',
+    ...(await getSeedImage(IMG.butterfly, 'free')),
     PostId: post2.id
   })
   await post2.addTags([tags['naturaleza'], tags['macro']])
@@ -129,8 +138,8 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.bulkCreate([
-    { ...getSeedImage(IMG.city), license: 'copyright', PostId: post3.id },
-    { ...getSeedImage(IMG.architecture), license: 'copyright', PostId: post3.id }
+    { ...(await getSeedImage(IMG.city, 'copyright', 'NIGHT VISION')), PostId: post3.id },
+    { ...(await getSeedImage(IMG.architecture, 'copyright', 'URBAN STYLE')), PostId: post3.id }
   ])
   await post3.addTags([tags['ciudad'], tags['nocturna'], tags['arquitectura']])
 
@@ -141,8 +150,7 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.create({
-    ...getSeedImage(IMG.forest),
-    license: 'free',
+    ...(await getSeedImage(IMG.forest, 'free')),
     PostId: post4.id
   })
   await post4.addTags([tags['naturaleza'], tags['paisaje']])
@@ -154,9 +162,9 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.bulkCreate([
-    { ...getSeedImage(IMG.architecture), license: 'copyright', PostId: post5.id },
-    { ...getSeedImage(IMG.city), license: 'copyright', PostId: post5.id },
-    { ...getSeedImage(IMG.alley), license: 'copyright', PostId: post5.id }
+    { ...(await getSeedImage(IMG.architecture, 'copyright', 'MODERN ART')), PostId: post5.id },
+    { ...(await getSeedImage(IMG.city, 'copyright', 'LUCIA FOTOS')), PostId: post5.id },
+    { ...(await getSeedImage(IMG.alley, 'copyright', 'TRAVEL LIGHT')), PostId: post5.id }
   ])
   await post5.addTags([tags['arquitectura'], tags['ciudad']])
 
@@ -167,8 +175,7 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.create({
-    ...getSeedImage(IMG.ocean),
-    license: 'free',
+    ...(await getSeedImage(IMG.ocean, 'free')),
     PostId: post6.id
   })
   await post6.addTags([tags['naturaleza'], tags['paisaje']])
@@ -180,8 +187,8 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.bulkCreate([
-    { ...getSeedImage(IMG.alley), license: 'copyright', PostId: post7.id },
-    { ...getSeedImage(IMG.sunset), license: 'copyright', PostId: post7.id }
+    { ...(await getSeedImage(IMG.alley, 'copyright', 'MARCOS LENS')), PostId: post7.id },
+    { ...(await getSeedImage(IMG.sunset, 'copyright', 'GOLDEN HOUR')), PostId: post7.id }
   ])
   await post7.addTags([tags['viajes'], tags['ciudad'], tags['arte']])
 
@@ -192,8 +199,7 @@ async function seed() {
     commentsEnabled: true
   })
   await PostImage.create({
-    ...getSeedImage(IMG.butterfly),
-    license: 'free',
+    ...(await getSeedImage(IMG.butterfly, 'free')),
     PostId: post8.id
   })
   await post8.addTags([tags['naturaleza'], tags['macro']])
@@ -205,9 +211,9 @@ async function seed() {
     commentsEnabled: false
   })
   await PostImage.bulkCreate([
-    { ...getSeedImage(IMG.ocean), license: 'free', PostId: post9.id },
-    { ...getSeedImage(IMG.sunset), license: 'free', PostId: post9.id },
-    { ...getSeedImage(IMG.forest), license: 'free', PostId: post9.id }
+    { ...(await getSeedImage(IMG.ocean, 'free')), PostId: post9.id },
+    { ...(await getSeedImage(IMG.sunset, 'free')), PostId: post9.id },
+    { ...(await getSeedImage(IMG.forest, 'free')), PostId: post9.id }
   ])
   await post9.addTags([tags['naturaleza'], tags['paisaje']])
 
@@ -279,20 +285,18 @@ async function seed() {
 
   console.log('\n⭐ Creando ratings...')
 
-  const allImages = await PostImage.findAll()
-
   const ratingsData = []
   const ratingUsers = [lucia, marcos, ana, esteban]
 
-  for (const img of allImages) {
-    const post = await Post.findByPk(img.PostId)
+  for (const post of allPosts) {
     const eligibleUsers = ratingUsers.filter(u => u.id !== post.UserId)
 
+    // Give each post some random ratings from eligible users
     for (let i = 0; i < Math.min(eligibleUsers.length, 2 + Math.floor(Math.random() * 2)); i++) {
       ratingsData.push({
         value: 3 + Math.floor(Math.random() * 3),
         UserId: eligibleUsers[i].id,
-        ImageId: img.id
+        PostId: post.id
       })
     }
   }

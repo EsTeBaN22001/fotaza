@@ -1,8 +1,8 @@
 # Use Node.js 20 LTS as base
 FROM node:20-alpine
 
-# Install build dependencies (needed for some npm packages like sharp)
-RUN apk add --no-cache python3 make g++
+# Install build dependencies (needed for some npm packages like sharp) and fonts for text rendering
+RUN apk add --no-cache python3 make g++ ttf-dejavu fontconfig
 
 # Create app directory
 WORKDIR /usr/src/app

@@ -23,6 +23,10 @@ const PostImage = sequelize.define(
       type: DataTypes.BLOB('long'),
       allowNull: false
     },
+    originalData: {
+      type: DataTypes.BLOB('long'),
+      allowNull: true
+    },
     license: {
       type: DataTypes.ENUM('copyright', 'free'),
       allowNull: false,
