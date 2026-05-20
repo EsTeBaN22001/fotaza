@@ -1,6 +1,6 @@
 
 const jwt = require('jsonwebtoken')
-const { User, Notification } = require('../models')
+const { User, Notification, Message } = require('../models')
 
 exports.attachUser = async (req, res, next) => {
   try {
@@ -36,6 +36,17 @@ exports.attachUser = async (req, res, next) => {
     } catch (e) {
       console.error('Error loading unread notifications count:', e)
       res.locals.unreadNotifications = 0
+    }
+
+    try {
+      const { Op } = require('sequelize')
+      const unreadMessages = await Message.count({
+        where: { receiverId: user.id, is_read: false }
+      })
+      res.locals.unreadMessages = unreadMessages
+    } catch (e) {
+      console.error('Error loading unread messages count:', e)
+      res.locals.unreadMessages = 0
     }
 
     if (req.query.success) res.locals.success = req.query.success

@@ -1,0 +1,95 @@
+extends ../../layouts/app
+
+block content
+  .row.justify-content-center
+    .col-lg-9
+
+      //- Header de la conversación
+      .d-flex.align-items-center.gap-3.mb-4
+        a.btn.btn-outline-secondary.btn-sm(href="/messages")
+          i.bi.bi-arrow-left.me-1
+          | Bandeja
+        .bg-secondary.rounded-circle.d-flex.align-items-center.justify-content-center(style="width:42px;height:42px;")
+          i.bi.bi-person-fill.text-white
+        .flex-grow-1
+          h5.mb-0.fw-bold= otherUser.username
+          if otherUser.created_at
+            small.text-muted
+              | Miembro desde #{new Date(otherUser.created_at).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}
+        a.btn.btn-outline-primary.btn-sm(href=`/profile/${otherUser.username}`)
+          i.bi.bi-person-circle.me-1
+          | Ver perfil
+
+      //- Publicaciones vinculadas (contexto del interés)
+      if relatedInterests && relatedInterests.length > 0
+        .alert.alert-info.d-flex.align-items-start.gap-2.mb-4
+          i.bi.bi-info-circle-fill.flex-shrink-0.mt-1
+          div
+            strong Publicaciones relacionadas:
+            .d-flex.flex-wrap.gap-2.mt-1
+              each interest in relatedInterests
+                if interest.Post
+                  a.badge.bg-light.text-primary.border.text-decoration-none.px-2.py-1(href=`/posts/${interest.Post.id}`)
+                    if interest.Post.images && interest.Post.images.length > 0
+                      img.rounded.me-1(src=`/images/${interest.Post.images[0].id}` style="width:20px;height:20px;object-fit:cover;" alt="")
+                    = interest.Post.title
+
+      //- Chat de mensajes
+      .card.shadow-sm.border-0.rounded-4.mb-3
+        .card-body.p-0
+          .chat-container(style="height:420px; overflow-y:auto; padding:1.25rem;" id="chatContainer")
+            if messages && messages.length > 0
+              each msg in messages
+                - const isMine = msg.senderId === user.id
+                .d-flex.mb-3(class=isMine ? 'justify-content-end' : 'justify-content-start')
+                  .message-bubble(
+                    style=`max-width:70%; padding:0.6rem 1rem; border-radius:${isMine ? '18px 18px 4px 18px' : '18px 18px 18px 4px'}; background:${isMine ? '#0d6efd' : '#f1f3f5'}; color:${isMine ? '#fff' : '#212529'};`
+                  )
+                    p.mb-1.small(style="white-space:pre-wrap;")= msg.content
+                    small.d-block.text-end(style=`opacity:0.7; font-size:0.7rem; color:${isMine ? 'rgba(255,255,255,0.8)' : '#6c757d'};`)
+                      = new Date(msg.created_at).toLocaleString('es-AR', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' })
+                      if isMine
+                        if msg.is_read
+                          i.bi.bi-check2-all.ms-1(title="Leído")
+                        else
+                          i.bi.bi-check2.ms-1(title="Enviado")
+            else
+              .text-center.text-muted.py-5
+                i.bi.bi-chat.display-5.d-block.mb-2
+                | Enviá el primer mensaje para comenzar la conversación.
+
+      //- Formulario de envío
+      form(action=`/messages/${otherUser.id}` method="POST")
+        .input-group.shadow-sm
+          textarea.form-control(
+            name="content"
+            rows="2"
+            placeholder=`Escribir a ${otherUser.username}...`
+            required
+            maxlength="2000"
+            id="msgInput"
+            style="resize:none; border-radius:12px 0 0 12px;"
+          )
+          button.btn.btn-primary(type="submit" style="border-radius:0 12px 12px 0;" title="Enviar")
+            i.bi.bi-send-fill
+
+  style.
+    .chat-container { scroll-behavior: smooth; }
+    .message-bubble { word-break: break-word; }
+
+  script.
+    // Scroll to bottom on load
+    const chatContainer = document.getElementById('chatContainer')
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight
+    }
+
+    // Submit with Ctrl+Enter
+    const msgInput = document.getElementById('msgInput')
+    if (msgInput) {
+      msgInput.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          this.closest('form').submit()
+        }
+      })
+    }

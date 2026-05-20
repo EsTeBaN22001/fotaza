@@ -38,6 +38,15 @@ block content
                 else if notif.type === 'PUBLICATION_INTERESTED'
                   - iconClass = 'bi-bookmark-fill text-success'
                   - linkUrl = `/posts/${notif.relatedId}`
+                else if notif.type === 'POST_RATED'
+                  - iconClass = 'bi-star-fill text-warning'
+                  - linkUrl = `/posts/${notif.relatedId}`
+                else if notif.type === 'POST_INTEREST'
+                  - iconClass = 'bi-hand-thumbsup-fill text-success'
+                  - linkUrl = notif.Actor ? `/messages/${notif.actorId}` : `/posts/${notif.relatedId}`
+                else if notif.type === 'NEW_MESSAGE'
+                  - iconClass = 'bi-chat-dots-fill text-primary'
+                  - linkUrl = notif.Actor ? `/messages/${notif.actorId}` : '/messages'
                 else if notif.type === 'POST_UNDER_REVIEW' || notif.type === 'COMMENT_REPORTED'
                   - iconClass = 'bi-exclamation-triangle-fill text-warning'
                   if notif.relatedId

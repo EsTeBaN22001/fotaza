@@ -87,6 +87,12 @@ html
                       if unreadNotifications && unreadNotifications > 0
                         span.badge.bg-danger.rounded-pill.ms-1= unreadNotifications
                   li
+                    a.dropdown-item(href="/messages")
+                      i.bi.bi-chat-dots.me-2
+                      | Mensajes
+                      if unreadMessages && unreadMessages > 0
+                        span.badge.bg-danger.rounded-pill.ms-1= unreadMessages
+                  li
                     hr.dropdown-divider
                   li
                     a.dropdown-item.text-danger(href="/auth/logout")

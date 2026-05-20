@@ -1,0 +1,42 @@
+extends ../../layouts/app
+
+block content
+  .row.justify-content-center
+    .col-lg-8
+
+      .d-flex.justify-content-between.align-items-center.mb-4
+        h2.mb-0
+          i.bi.bi-chat-dots.me-2
+          | Mensajes
+        if unreadMessages && unreadMessages > 0
+          span.badge.bg-danger.fs-6= `${unreadMessages} sin leer`
+
+      .card.shadow-sm.border-0.rounded-4
+        .card-body.p-0
+          if conversations && conversations.length > 0
+            ul.list-group.list-group-flush.rounded-4
+              each conv in conversations
+                li.list-group-item.list-group-item-action.p-3(
+                  class=conv.unreadCount > 0 ? 'bg-primary-subtle' : ''
+                )
+                  a.text-decoration-none.text-dark(href=`/messages/${conv.otherUser.id}`)
+                    .d-flex.align-items-center.gap-3
+                      .bg-secondary.rounded-circle.d-flex.align-items-center.justify-content-center.flex-shrink-0(
+                        style="width:48px;height:48px;"
+                      )
+                        i.bi.bi-person-fill.text-white.fs-5
+                      .flex-grow-1.min-width-0
+                        .d-flex.justify-content-between.align-items-start
+                          span.fw-bold= conv.otherUser.username
+                          small.text-muted.flex-shrink-0.ms-2= new Date(conv.lastMessage.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+                        p.mb-0.small.text-muted.text-truncate= conv.lastMessage.content
+                      if conv.unreadCount > 0
+                        span.badge.bg-danger.rounded-pill.flex-shrink-0= conv.unreadCount
+
+          else
+            .text-center.py-5
+              i.bi.bi-chat-dots.display-4.text-muted.d-block.mb-3
+              h5.text-muted No tenés mensajes aún
+              p.text-muted.mb-0
+                | Los mensajes aparecen cuando alguien expresa interés en tus publicaciones
+                | o cuando vos expresás interés en las de otro usuario.

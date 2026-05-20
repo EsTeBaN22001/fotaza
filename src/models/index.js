@@ -11,24 +11,27 @@ const Collection = require('./Collection')
 const Interest = require('./Interest')
 const Like = require('./Like')
 const Bookmark = require('./Bookmark')
+const Message = require('./Message')
 
-User.hasMany(Post, { foreignKey: 'UserId', as: 'posts' })
+User.hasMany(Post, { foreignKey: 'UserId', as: 'posts', onDelete: 'CASCADE' })
 Post.belongsTo(User, { foreignKey: 'UserId', as: 'User' })
 
-Post.hasMany(PostImage, { foreignKey: 'PostId', as: 'images' })
+Post.hasMany(PostImage, { foreignKey: 'PostId', as: 'images', onDelete: 'CASCADE' })
 PostImage.belongsTo(Post, { foreignKey: 'PostId' })
 
-User.hasMany(Comment)
+User.hasMany(Comment, { onDelete: 'CASCADE' })
 Comment.belongsTo(User)
 Comment.belongsTo(Post)
-Post.hasMany(Comment)
+Post.hasMany(Comment, { onDelete: 'CASCADE' })
 
-PostImage.hasMany(Rating)
-Rating.belongsTo(PostImage)
-User.hasMany(Rating)
+// Rating ahora asociado a Post (no a PostImage)
+Post.hasMany(Rating, { foreignKey: 'PostId', as: 'Ratings', onDelete: 'CASCADE' })
+Rating.belongsTo(Post, { foreignKey: 'PostId' })
+User.hasMany(Rating, { foreignKey: 'UserId', onDelete: 'CASCADE' })
+Rating.belongsTo(User, { foreignKey: 'UserId' })
 
-Post.belongsToMany(Tag, { through: 'post_tags' })
-Tag.belongsToMany(Post, { through: 'post_tags' })
+Post.belongsToMany(Tag, { through: 'post_tags', onDelete: 'CASCADE' })
+Tag.belongsToMany(Post, { through: 'post_tags', onDelete: 'CASCADE' })
 
 User.belongsToMany(User, {
   as: 'Followers',
@@ -70,6 +73,18 @@ Report.belongsTo(User, { foreignKey: 'reporterId', as: 'Reporter' })
 User.hasMany(Report, { foreignKey: 'resolverId', as: 'reportsResolved' })
 Report.belongsTo(User, { foreignKey: 'resolverId', as: 'Resolver' })
 
+// Interest: usuario expresa interés en adquirir una publicación
+User.hasMany(Interest, { foreignKey: 'UserId', as: 'interests', onDelete: 'CASCADE' })
+Interest.belongsTo(User, { foreignKey: 'UserId', as: 'InterestedUser' })
+Post.hasMany(Interest, { foreignKey: 'PostId', as: 'Interests', onDelete: 'CASCADE' })
+Interest.belongsTo(Post, { foreignKey: 'PostId' })
+
+// Messages: mensajería privada 1-a-1
+User.hasMany(Message, { foreignKey: 'senderId', as: 'SentMessages', onDelete: 'CASCADE' })
+Message.belongsTo(User, { foreignKey: 'senderId', as: 'Sender' })
+User.hasMany(Message, { foreignKey: 'receiverId', as: 'ReceivedMessages', onDelete: 'CASCADE' })
+Message.belongsTo(User, { foreignKey: 'receiverId', as: 'Receiver' })
+
 module.exports = {
   User,
   Post,
@@ -83,5 +98,6 @@ module.exports = {
   Collection,
   Interest,
   Like,
-  Bookmark
+  Bookmark,
+  Message
 }
