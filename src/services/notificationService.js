@@ -21,7 +21,15 @@ exports.createNotification = async ({ receiverId, actorId, type, relatedId, mess
       case 'PUBLICATION_INTERESTED':
         finalMessage = 'ha guardado tu publicación.'
         break
-
+      case 'POST_RATED':
+        finalMessage = 'ha valorado tu publicación.'
+        break
+      case 'POST_INTEREST':
+        finalMessage = 'está interesado/a en adquirir una imagen de tu publicación. Revisá tu bandeja de mensajes para contactarte.'
+        break
+      case 'NEW_MESSAGE':
+        finalMessage = message || 'te ha enviado un mensaje privado.'
+        break
       case 'POST_UNDER_REVIEW':
         finalMessage = message || 'Tu publicación está bajo revisión por múltiples denuncias.'
         break

@@ -141,8 +141,7 @@ exports.getSearch = async (req, res) => {
         const ratingSubquery = `(
           SELECT COALESCE(AVG(r.value), 0)
           FROM ratings r
-          INNER JOIN images i ON r.ImageId = i.id
-          WHERE i.PostId = Post.id
+          WHERE r.PostId = Post.id
         )`
         order = [[literal(ratingSubquery), 'DESC']]
       } else if (orderBy === 'most_commented') {
@@ -278,8 +277,7 @@ exports.getExplore = async (req, res) => {
     const ratingSubquery = `(
       SELECT COALESCE(AVG(r.value), 0)
       FROM ratings r
-      INNER JOIN images i ON r.ImageId = i.id
-      WHERE i.PostId = Post.id
+      WHERE r.PostId = Post.id
     )`
 
     const popularPosts = await Post.findAll({

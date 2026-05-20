@@ -1,4 +1,5 @@
-const { Post, PostImage, User, Tag, Comment, Like, Bookmark } = require('../models')
+const { Post, PostImage, User, Tag, Comment, Like, Bookmark, Rating } = require('../models')
+const { Op, fn, col, literal } = require('sequelize')
 const postService = require('../services/postService')
 const notificationService = require('../services/notificationService')
 
@@ -22,7 +23,8 @@ exports.showPost = async (req, res) => {
         { model: User, as: 'User', attributes: ['id', 'username'] },
         { model: Tag, through: { attributes: [] } },
         { model: Like },
-        { model: Bookmark }
+        { model: Bookmark },
+        { model: Rating, as: 'Ratings' }
       ]
     })
 
@@ -45,6 +47,17 @@ exports.showPost = async (req, res) => {
     const saveCount = await Bookmark.count({ where: { PostId: post.id } })
     const isSaved = req.user ? await Bookmark.findOne({ where: { PostId: post.id, UserId: req.user.id } }) : false
 
+    // Datos de valoración
+    const ratings = post.Ratings || []
+    const ratingCount = ratings.length
+    const ratingAvg = ratingCount > 0
+      ? (ratings.reduce((sum, r) => sum + r.value, 0) / ratingCount).toFixed(1)
+      : null
+    const userRating = req.user
+      ? ratings.find(r => r.UserId === req.user.id)?.value || null
+      : null
+    const isAuthor = req.user && post.User && req.user.id === post.User.id
+
     const errors = req.query.error ? [{ message: decodeURIComponent(req.query.error) }] : []
     const success = req.query.success ? decodeURIComponent(req.query.success) : null
 
@@ -56,6 +69,10 @@ exports.showPost = async (req, res) => {
       isLiked: !!isLiked,
       saveCount,
       isSaved: !!isSaved,
+      ratingAvg,
+      ratingCount,
+      userRating,
+      isAuthor,
       errors,
       success
     })
@@ -65,6 +82,65 @@ exports.showPost = async (req, res) => {
       message: 'Error al cargar la publicación',
       errors: [{ message: err.message }]
     })
+  }
+}
+
+exports.ratePost = async (req, res) => {
+  try {
+    const postId = req.params.id
+    const userId = req.user.id
+    const value = parseInt(req.body.value)
+
+    if (!value || value < 1 || value > 5) {
+      return res.status(400).json({ success: false, message: 'Valoración inválida. Debe ser entre 1 y 5 estrellas.' })
+    }
+
+    const post = await Post.findByPk(postId, {
+      include: [{ model: User, as: 'User', attributes: ['id'] }]
+    })
+
+    if (!post) {
+      return res.status(404).json({ success: false, message: 'Publicación no encontrada' })
+    }
+
+    // El autor no puede valorar su propia publicación
+    if (post.UserId === userId) {
+      return res.status(403).json({ success: false, message: 'No podés valorar tu propia publicación.' })
+    }
+
+    // Verificar si ya existe una valoración del usuario para este post
+    const existingRating = await Rating.findOne({
+      where: { UserId: userId, PostId: postId }
+    })
+
+    if (existingRating) {
+      return res.status(409).json({ success: false, message: 'Ya valoraste esta publicación.' })
+    }
+
+    await Rating.create({ UserId: userId, PostId: postId, value })
+
+    // Notificar al autor
+    await notificationService.createNotification({
+      receiverId: post.UserId,
+      actorId: userId,
+      type: 'POST_RATED',
+      relatedId: postId
+    })
+
+    // Calcular nuevo promedio
+    const allRatings = await Rating.findAll({ where: { PostId: postId } })
+    const ratingCount = allRatings.length
+    const ratingAvg = (allRatings.reduce((sum, r) => sum + r.value, 0) / ratingCount).toFixed(1)
+
+    return res.json({
+      success: true,
+      userRating: value,
+      ratingAvg,
+      ratingCount
+    })
+  } catch (err) {
+    console.error('❌ Error en ratePost:', err)
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' })
   }
 }
 

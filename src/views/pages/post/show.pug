@@ -41,6 +41,19 @@ block content
               i.bi.bi-image.d-block(style="font-size: 3rem;")
               span Sin imágenes
 
+        //- Licencias de las imágenes
+        if post.images && post.images.length > 0
+          .mt-2.d-flex.flex-wrap.gap-2
+            each img, idx in post.images
+              if img.license === 'copyright'
+                span.badge.bg-warning.text-dark(title=`Imagen ${idx+1}: Con copyright`)
+                  i.bi.bi-c-circle.me-1
+                  | Copyright
+              else
+                span.badge.bg-success(title=`Imagen ${idx+1}: Libre de derechos`)
+                  i.bi.bi-unlock.me-1
+                  | Libre de derechos
+
       .col-lg-4
         .card.shadow-sm.border-0.mb-4
           .card-body.p-4
@@ -93,6 +106,78 @@ block content
                     a.badge.rounded-pill.bg-primary.bg-opacity-10.text-primary.px-3.py-2.small.text-decoration-none(href=`/search?tags=${tag.name}`)
                       i.bi.bi-tag.me-1
                       = tag.name
+
+            //- ============================================
+            //- SECCIÓN DE VALORACIÓN (ESTRELLAS)
+            //- ============================================
+            .border.rounded-3.p-3.mb-3(style="background: #f8f9fa;")
+              .d-flex.justify-content-between.align-items-center.mb-2
+                span.fw-semibold.small
+                  i.bi.bi-star-fill.text-warning.me-1
+                  | Valoración
+                if ratingCount > 0
+                  span.text-muted.small #{ratingCount} #{ratingCount === 1 ? 'valoración' : 'valoraciones'}
+                else
+                  span.text-muted.small Sin valoraciones aún
+
+              //- Promedio visual
+              if ratingAvg
+                .d-flex.align-items-center.gap-2.mb-2
+                  .rating-display
+                    - for (let s = 1; s <= 5; s++)
+                      i.bi.fs-5(class=s <= Math.round(parseFloat(ratingAvg)) ? 'bi-star-fill text-warning' : 'bi-star text-muted')
+                  span.fw-bold.text-warning.fs-5= ratingAvg
+                  span.text-muted.small / 5
+              else
+                p.text-muted.small.mb-2 Sé el primero en valorar esta publicación.
+
+              //- Widget para valorar
+              if user && !isAuthor
+                if userRating
+                  .alert.alert-success.py-2.px-3.mb-0.small
+                    i.bi.bi-check-circle.me-1
+                    | Valoraste con 
+                    strong #{userRating} 
+                    | #{userRating === 1 ? 'estrella' : 'estrellas'}
+                else
+                  .d-flex.align-items-center.gap-2
+                    span.small.text-muted Tu valoración:
+                    .star-rating-input(data-post-id=post.id)
+                      - for (let s = 1; s <= 5; s++)
+                        button.star-btn.btn.btn-link.p-0.text-muted(
+                          type="button"
+                          data-value=s
+                          aria-label=`${s} ${s === 1 ? 'estrella' : 'estrellas'}`
+                          title=`${s} ${s === 1 ? 'estrella' : 'estrellas'}`
+                        )
+                          i.bi.bi-star.fs-5
+              else if !user
+                small.text-muted
+                  a.text-decoration-none(href="/auth/login") Iniciá sesión
+                  |  para valorar esta publicación.
+              else if isAuthor
+                small.text-muted.fst-italic No podés valorar tu propia publicación.
+
+            //- ============================================
+            //- BOTÓN ME INTERESA
+            //- ============================================
+            if user && !isAuthor
+              .mb-3
+                button.btn.btn-outline-success.w-100.interest-btn(
+                  id=`interest-btn-${post.id}`
+                  data-post-id=post.id
+                  type="button"
+                )
+                  i.bi.bi-hand-thumbsup.me-2
+                  span.interest-text Me interesa adquirir
+                a.btn.btn-sm.btn-link.text-muted.d-none#msg-link-btn(href=`/messages`)
+                  i.bi.bi-chat-dots.me-1
+                  | Ver conversación con el autor
+            else if !user
+              .mb-3
+                a.btn.btn-outline-secondary.w-100(href="/auth/login")
+                  i.bi.bi-lock.me-2
+                  | Iniciá sesión para expresar interés
 
             .d-flex.align-items-center.gap-4.text-muted.border-top.pt-3
               span
@@ -165,7 +250,6 @@ block content
 
   style.
     .x-small { font-size: 0.75rem; }
-    /* Hacer que la imagen sea pegajosa en desktop */
     @media (min-width: 992px) {
       .col-lg-8 {
         position: sticky;
@@ -173,6 +257,9 @@ block content
         align-self: flex-start;
       }
     }
+    .star-btn i { transition: color 0.15s; }
+    .star-btn:hover i, .star-btn.hovered i { color: #f5c518 !important; }
+    .star-btn.selected i { color: #f5c518 !important; }
 
   .modal.fade#reportModal(tabindex="-1" aria-labelledby="reportModalLabel" aria-hidden="true")
     .modal-dialog
@@ -208,3 +295,5 @@ block content
   script(src="/js/likes.js")
   script(src="/js/bookmarks.js")
   script(src="/js/reports.js")
+  script(src="/js/ratings.js")
+  script(src="/js/interest.js")

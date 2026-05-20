@@ -33,63 +33,85 @@ block content
               | Recuerda: todas las imágenes deben ser de tu autoría.
 
   else
-    .row
+    .row.row-cols-1.row-cols-md-3.g-4
       each post in posts
-        .col-md-4.mb-4
-          .card.shadow-sm.h-100
+        - const ratings = post.Ratings || []
+        - const ratingCount = ratings.length
+        - const ratingAvg = ratingCount > 0 ? (ratings.reduce((sum, r) => sum + r.value, 0) / ratingCount).toFixed(1) : null
+        .col
+          .card.shadow-sm.h-100.border-0.rounded-4.overflow-hidden
 
             if post.images.length == 1
-              a(href=`/posts/${post.id}`)
-                img.card-img-top(
-                  src=`/images/${post.images[0].id}`
-                  alt=post.title
-                  style="height: 250px; object-fit: cover;"
-                  loading="lazy"
-                )
+              .position-relative
+                a(href=`/posts/${post.id}`)
+                  img.card-img-top(
+                    src=`/images/${post.images[0].id}`
+                    alt=post.title
+                    style="height: 220px; object-fit: cover;"
+                    loading="lazy"
+                  )
+                //- Badge de licencia
+                if post.images[0].license === 'copyright'
+                  span.badge.bg-dark.position-absolute.bottom-0.start-0.m-2(style="opacity:0.8;")
+                    i.bi.bi-c-circle.me-1
+                    | Copyright
 
             else if post.images.length > 1
               - const carouselId = 'carousel-' + post.id
+              .position-relative
+                .carousel.slide(id=carouselId data-bs-ride="carousel")
+                  .carousel-inner
+                    each img, index in post.images
+                      .carousel-item(class=index === 0 ? 'active' : '')
+                        a(href=`/posts/${post.id}`)
+                          img.d-block.w-100(
+                            src=`/images/${img.id}`
+                            alt=post.title
+                            style="height: 220px; object-fit: cover;"
+                            loading="lazy"
+                          )
 
-              .carousel.slide(id=carouselId data-bs-ride="carousel")
-                .carousel-inner
-                  each img, index in post.images
-                    .carousel-item(class=index === 0 ? 'active' : '')
-                      a(href=`/posts/${post.id}`)
-                        img.d-block.w-100(
-                          src=`/images/${img.id}`
-                          alt=post.title
-                          style="height: 250px; object-fit: cover;"
-                          loading="lazy"
-                        )
+                  button.carousel-control-prev(
+                    type="button"
+                    data-bs-target='#' + carouselId
+                    data-bs-slide="prev"
+                  )
+                    span.carousel-control-prev-icon
 
-                button.carousel-control-prev(
-                  type="button"
-                  data-bs-target='#' + carouselId
-                  data-bs-slide="prev"
-                )
-                  span.carousel-control-prev-icon
-
-                button.carousel-control-next(
-                  type="button"
-                  data-bs-target='#' + carouselId
-                  data-bs-slide="next"
-                )
-                  span.carousel-control-next-icon
+                  button.carousel-control-next(
+                    type="button"
+                    data-bs-target='#' + carouselId
+                    data-bs-slide="next"
+                  )
+                    span.carousel-control-next-icon
 
             else
               a(href=`/posts/${post.id}`)
                 img.card-img-top(
                   src="/placeholder.svg"
                   alt="Sin imagen"
-                  style="height: 250px; object-fit: cover;"
+                  style="height: 220px; object-fit: cover;"
                 )
 
-            .card-body.d-flex.flex-column
-              h5.card-title
-                a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
+            .card-body.d-flex.flex-column.px-3.py-2
+              h5.card-title.mb-1
+                a.text-decoration-none.text-dark.fw-semibold(href=`/posts/${post.id}`)= post.title
               
-              p.card-text.text-muted.mb-2= post.description.length > 100 ? post.description.substring(0, 100) + '...' : post.description
-              
+              p.card-text.text-muted.small.mb-2= post.description && post.description.length > 90 ? post.description.substring(0, 90) + '…' : post.description
+
+              //- Rating display
+              .d-flex.align-items-center.gap-2.mb-2
+                if ratingAvg
+                  .d-flex.align-items-center.gap-1
+                    - for (let s = 1; s <= 5; s++)
+                      i.bi.small(class=s <= Math.round(parseFloat(ratingAvg)) ? 'bi-star-fill text-warning' : 'bi-star text-muted')
+                    span.small.fw-bold.text-warning= ratingAvg
+                    span.text-muted.small (#{ratingCount})
+                else
+                  span.text-muted.small
+                    i.bi.bi-star.me-1
+                    | Sin valoraciones
+
               .d-flex.align-items-center.gap-3.mb-2
                 - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
                 - const likeCount = post.Likes ? post.Likes.length : 0
@@ -123,13 +145,13 @@ block content
                     i.bi.bi-lock-fill.ms-1.text-secondary(style="font-size: 0.75rem;")
 
               if post.Tags && post.Tags.length > 0
-                .d-flex.flex-wrap.gap-1.mb-3
+                .d-flex.flex-wrap.gap-1.mb-2
                   each tag in post.Tags
                     a.badge.rounded-pill.bg-light.text-primary.border.small.text-decoration-none(href=`/search?tags=${tag.name}`)= tag.name
               
               .flex-grow-1
               
-              small.text-muted.d-block.mb-2
+              small.text-muted.d-block.mt-1
                 | Por 
                 if post.User && post.User.username
                   if user
@@ -143,4 +165,4 @@ block content
                 span= new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
 
   script(src="/js/likes.js")
-  script(src="/js/bookmarks.js")
+  script(src="/js/bookmarks.js")

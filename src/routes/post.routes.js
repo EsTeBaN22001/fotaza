@@ -3,6 +3,7 @@ const router = express.Router()
 
 const controller = require('../controllers/post.controller')
 const bookmarkController = require('../controllers/bookmark.controller')
+const interestController = require('../controllers/interest.controller')
 const { authRequired } = require('../middlewares/authMiddleware')
 const upload = require('../middlewares/uploadMiddleware')
 
@@ -24,5 +25,9 @@ router.post('/:id/like', authRequired, controller.toggleLike)
 
 router.post('/:id/save', authRequired, bookmarkController.toggleBookmark)
 
-module.exports = router
+router.post('/:id/rate', authRequired, controller.ratePost)
 
+router.post('/:id/interest', authRequired, interestController.toggleInterest)
+router.get('/:id/interest/status', authRequired, interestController.getInterestStatus)
+
+module.exports = router
