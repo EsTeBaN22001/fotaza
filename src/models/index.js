@@ -50,7 +50,11 @@ User.belongsToMany(User, {
 User.hasMany(Notification, { foreignKey: 'UserId', as: 'notifications' })
 Notification.belongsTo(User, { foreignKey: 'UserId', as: 'Receiver' })
 Notification.belongsTo(User, { foreignKey: 'actorId', as: 'Actor' })
-Collection.belongsTo(User)
+User.hasMany(Collection, { foreignKey: 'UserId', as: 'collections', onDelete: 'CASCADE' })
+Collection.belongsTo(User, { foreignKey: 'UserId' })
+
+Collection.hasMany(Bookmark, { foreignKey: 'CollectionId', as: 'bookmarks', onDelete: 'SET NULL' })
+Bookmark.belongsTo(Collection, { foreignKey: 'CollectionId', as: 'Collection' })
 
 User.hasMany(Like, { onDelete: 'CASCADE' })
 Like.belongsTo(User, { onDelete: 'CASCADE' })

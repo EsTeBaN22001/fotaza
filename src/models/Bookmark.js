@@ -13,6 +13,11 @@ const Bookmark = sequelize.define(
       type: DataTypes.INTEGER,
       primaryKey: true,
       allowNull: false
+    },
+    CollectionId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: null
     }
   },
   {

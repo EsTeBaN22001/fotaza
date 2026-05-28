@@ -2,111 +2,279 @@ extends ../../layouts/app
 
 block content
   .container.mt-4
-    .d-flex.align-items-center.mb-4
+    .d-flex.align-items-center.justify-content-between.mb-4
       h2.fw-bold.mb-0
         i.bi.bi-bookmark-fill.text-primary.me-2
         | Mis Guardados
+      button.btn.btn-primary.btn-sm#btnNewCollection(type="button")
+        i.bi.bi-plus-lg.me-1
+        | Nueva Colección
 
-    if !posts || posts.length === 0
-      .text-center.py-5
-        .display-1.mb-3
-          i.bi.bi-bookmark.text-muted
-        h4.fw-bold.text-muted Aún no has guardado publicaciones
-        p.text-muted.mb-4
-          | Explora el inicio y guarda las publicaciones que más te gusten.
-        a.btn.btn-primary(href='/home')
-          i.bi.bi-house-door.me-2
-          | Explorar publicaciones
+    .row
+      //- Sidebar de colecciones
+      .col-md-3.mb-4
+        .card.shadow-sm.border-0
+          .card-header.bg-white.fw-semibold.small.py-2
+            i.bi.bi-folder.me-1
+            | Colecciones
+          .list-group.list-group-flush#collectionSidebar
+            a.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center(
+              href="/profile/saved"
+              class=(!activeCollection ? 'active' : '')
+            )
+              span
+                i.bi.bi-grid.me-2
+                | Todos
+              if posts && posts.length > 0
+                span.badge.bg-primary.rounded-pill= posts.length
 
-    else
-      .row
-        each post in posts
-          .col-md-4.mb-4
-            .card.shadow-sm.h-100
+            a.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center(
+              href="/profile/saved?collection=uncategorized"
+              class=(activeCollection === 'uncategorized' ? 'active' : '')
+            )
+              span
+                i.bi.bi-inbox.me-2
+                | Sin colección
 
-              if post.images && post.images.length > 0
-                if post.images.length === 1
-                  a(href=`/posts/${post.id}`)
-                    img.card-img-top(
-                      src=post.images[0].url
-                      alt=post.title
-                      style="height: 250px; object-fit: cover;"
-                      loading="lazy"
-                    )
-                else
-                  - const carouselId = 'carousel-saved-' + post.id
-                  .carousel.slide(id=carouselId data-bs-ride="carousel")
-                    .carousel-inner
-                      each img, index in post.images
-                        .carousel-item(class=index === 0 ? 'active' : '')
-                          a(href=`/posts/${post.id}`)
-                            img.d-block.w-100(
-                              src=img.url
-                              alt=post.title
-                              style="height: 250px; object-fit: cover;"
-                              loading="lazy"
-                            )
-                    button.carousel-control-prev(
-                      type="button"
-                      data-bs-target='#' + carouselId
-                      data-bs-slide="prev"
-                    )
-                      span.carousel-control-prev-icon
-                    button.carousel-control-next(
-                      type="button"
-                      data-bs-target='#' + carouselId
-                      data-bs-slide="next"
-                    )
-                      span.carousel-control-next-icon
-              else
-                a(href=`/posts/${post.id}`)
-                  img.card-img-top(
-                    src="/placeholder.svg"
-                    alt="Sin imagen"
-                    style="height: 250px; object-fit: cover;"
+            if collections && collections.length > 0
+              each col in collections
+                .list-group-item.d-flex.justify-content-between.align-items-center.collection-item(
+                  data-collection-id=col.id
+                )
+                  a.text-decoration-none.flex-grow-1.text-truncate(
+                    href=`/profile/saved?collection=${col.id}`
+                    class=(activeCollection == col.id ? 'fw-bold text-primary' : 'text-dark')
+                    title=col.description || col.name
                   )
+                    i.bi.bi-folder2.me-2
+                    = col.name
+                  .d-flex.align-items-center.gap-1
+                    span.badge.bg-light.text-dark.rounded-pill.small= col.bookmarks ? col.bookmarks.length : 0
+                    .dropdown
+                      button.btn.btn-sm.btn-link.text-muted.p-0.ms-1(
+                        type="button"
+                        data-bs-toggle="dropdown"
+                      )
+                        i.bi.bi-three-dots-vertical.small
+                      ul.dropdown-menu.dropdown-menu-end
+                        li
+                          button.dropdown-item.small.btn-edit-collection(
+                            type="button"
+                            data-id=col.id
+                            data-name=col.name
+                            data-description=col.description || ''
+                          )
+                            i.bi.bi-pencil.me-2
+                            | Editar
+                        li
+                          button.dropdown-item.small.text-danger.btn-delete-collection(
+                            type="button"
+                            data-id=col.id
+                            data-name=col.name
+                          )
+                            i.bi.bi-trash.me-2
+                            | Eliminar
 
-              .card-body.d-flex.flex-column
-                h5.card-title
-                  a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
+      //- Grid de posts guardados
+      .col-md-9
+        if !posts || posts.length === 0
+          .text-center.py-5
+            .display-1.mb-3
+              i.bi.bi-bookmark.text-muted
+            if activeCollection && activeCollection !== 'uncategorized'
+              h4.fw-bold.text-muted No hay publicaciones en esta colección
+              p.text-muted.mb-4
+                | Guardá publicaciones y organizalas en esta colección.
+            else if activeCollection === 'uncategorized'
+              h4.fw-bold.text-muted No hay publicaciones sin clasificar
+              p.text-muted.mb-4
+                | Todas tus publicaciones están organizadas en colecciones.
+            else
+              h4.fw-bold.text-muted Aún no has guardado publicaciones
+              p.text-muted.mb-4
+                | Explora el inicio y guarda las publicaciones que más te gusten.
+            a.btn.btn-primary(href='/home')
+              i.bi.bi-house-door.me-2
+              | Explorar publicaciones
 
-                p.card-text.text-muted.mb-2= post.description && post.description.length > 100 ? post.description.substring(0, 100) + '...' : (post.description || '')
+        else
+          .row
+            each post in posts
+              .col-md-4.mb-4
+                .card.shadow-sm.h-100.border-0.rounded-3.overflow-hidden
 
-                .d-flex.align-items-center.gap-3.mb-2
-                  - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
-                  - const likeCount = post.Likes ? post.Likes.length : 0
-                  button.btn.btn-link.p-0.text-decoration-none.like-btn.small(
-                    class=isLiked ? 'text-danger' : 'text-muted'
-                    data-post-id=post.id
-                    aria-label=isLiked ? 'Quitar me gusta' : 'Dar me gusta'
-                  )
-                    i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
-                    span.like-count= likeCount
-                    |  me gusta
-
-                  - const isSaved = user && post.Bookmarks && post.Bookmarks.some(b => b.UserId === user.id)
-                  button.btn.btn-link.p-0.text-decoration-none.save-btn.small(
-                    class=isSaved ? 'text-primary' : 'text-muted'
-                    data-post-id=post.id
-                    aria-label=isSaved ? 'Quitar de guardados' : 'Guardar'
-                  )
-                    i.bi(class=isSaved ? 'bi-bookmark-fill' : 'bi-bookmark')
-
-                if post.Tags && post.Tags.length > 0
-                  .d-flex.flex-wrap.gap-1.mb-3
-                    each tag in post.Tags
-                      a.badge.rounded-pill.bg-light.text-primary.border.small.text-decoration-none(href=`/search?tags=${tag.name}`)= tag.name
-
-                .flex-grow-1
-
-                small.text-muted.d-block.mb-2
-                  | Por 
-                  if post.User && post.User.username
-                    a.text-decoration-none.fw-bold(href=`/profile/${post.User.username}`)= post.User.username
+                  if post.images && post.images.length > 0
+                    if post.images.length === 1
+                      a(href=`/posts/${post.id}`)
+                        img.card-img-top(
+                          src=post.images[0].url
+                          alt=post.title
+                          style="height: 250px; object-fit: cover;"
+                          loading="lazy"
+                        )
+                    else
+                      - const carouselId = 'carousel-saved-' + post.id
+                      .carousel.slide(id=carouselId data-bs-ride="carousel")
+                        .carousel-inner
+                          each img, index in post.images
+                            .carousel-item(class=index === 0 ? 'active' : '')
+                              a(href=`/posts/${post.id}`)
+                                img.d-block.w-100(
+                                  src=img.url
+                                  alt=post.title
+                                  style="height: 250px; object-fit: cover;"
+                                  loading="lazy"
+                                )
+                        button.carousel-control-prev(
+                          type="button"
+                          data-bs-target='#' + carouselId
+                          data-bs-slide="prev"
+                        )
+                          span.carousel-control-prev-icon
+                        button.carousel-control-next(
+                          type="button"
+                          data-bs-target='#' + carouselId
+                          data-bs-slide="next"
+                        )
+                          span.carousel-control-next-icon
                   else
-                    | Anónimo
-                  |  • 
-                  span= new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+                    a(href=`/posts/${post.id}`)
+                      img.card-img-top(
+                        src="/placeholder.svg"
+                        alt="Sin imagen"
+                        style="height: 250px; object-fit: cover;"
+                      )
+
+                  .card-body.d-flex.flex-column
+                    h5.card-title
+                      a.text-decoration-none.text-dark(href=`/posts/${post.id}`)= post.title
+
+                    p.card-text.text-muted.mb-2= post.description && post.description.length > 100 ? post.description.substring(0, 100) + '...' : (post.description || '')
+
+                    //- Colección del bookmark
+                    .mb-2
+                      .dropdown
+                        button.btn.btn-sm.btn-outline-secondary.w-100.text-start.d-flex.align-items-center.justify-content-between.bookmark-collection-btn(
+                          type="button"
+                          data-bs-toggle="dropdown"
+                          data-post-id=post.id
+                          data-current-collection=post.bookmarkCollectionId || ''
+                        )
+                          span.text-truncate
+                            if post.bookmarkCollectionName
+                              i.bi.bi-folder2.me-1
+                              = post.bookmarkCollectionName
+                            else
+                              i.bi.bi-inbox.me-1
+                              | Sin colección
+                          i.bi.bi-chevron-down.ms-1.small
+                        ul.dropdown-menu.w-100.move-collection-dropdown
+                          li
+                            button.dropdown-item.small.move-to-collection(
+                              type="button"
+                              data-post-id=post.id
+                              data-collection-id=""
+                            )
+                              i.bi.bi-inbox.me-2
+                              | Sin colección
+                          if collections && collections.length > 0
+                            li: hr.dropdown-divider
+                            each col in collections
+                              li
+                                button.dropdown-item.small.move-to-collection(
+                                  type="button"
+                                  data-post-id=post.id
+                                  data-collection-id=col.id
+                                  class=(post.bookmarkCollectionId == col.id ? 'active' : '')
+                                )
+                                  i.bi.bi-folder2.me-2
+                                  = col.name
+
+                    .d-flex.align-items-center.gap-3.mb-2
+                      - const isLiked = user && post.Likes && post.Likes.some(l => l.UserId === user.id)
+                      - const likeCount = post.Likes ? post.Likes.length : 0
+                      button.btn.btn-link.p-0.text-decoration-none.like-btn.small(
+                        class=isLiked ? 'text-danger' : 'text-muted'
+                        data-post-id=post.id
+                        aria-label=isLiked ? 'Quitar me gusta' : 'Dar me gusta'
+                      )
+                        i.bi(class=isLiked ? 'bi-heart-fill' : 'bi-heart').me-1
+                        span.like-count= likeCount
+                        |  me gusta
+
+                      - const isSaved = user && post.Bookmarks && post.Bookmarks.some(b => b.UserId === user.id)
+                      button.btn.btn-link.p-0.text-decoration-none.save-btn.small(
+                        class=isSaved ? 'text-primary' : 'text-muted'
+                        data-post-id=post.id
+                        aria-label=isSaved ? 'Quitar de guardados' : 'Guardar'
+                      )
+                        i.bi(class=isSaved ? 'bi-bookmark-fill' : 'bi-bookmark')
+
+                    if post.Tags && post.Tags.length > 0
+                      .d-flex.flex-wrap.gap-1.mb-3
+                        each tag in post.Tags
+                          a.badge.rounded-pill.bg-light.text-primary.border.small.text-decoration-none(href=`/search?tags=${tag.name}`)= tag.name
+
+                    .flex-grow-1
+
+                    small.text-muted.d-block.mb-2
+                      | Por 
+                      if post.User && post.User.username
+                        a.text-decoration-none.fw-bold(href=`/profile/${post.User.username}`)= post.User.username
+                      else
+                        | Anónimo
+                      |  • 
+                      span= new Date(post.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })
+
+  //- Modal: Nueva / Editar Colección
+  .modal.fade#collectionModal(tabindex="-1" aria-labelledby="collectionModalLabel" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+      .modal-content
+        .modal-header
+          h5.modal-title#collectionModalLabel Nueva Colección
+          button.btn-close(type="button" data-bs-dismiss="modal" aria-label="Close")
+        .modal-body
+          .mb-3
+            label.form-label(for="collectionName") Nombre *
+            input.form-control#collectionName(
+              type="text"
+              placeholder="Ej: Paisajes favoritos"
+              maxlength="100"
+              required
+            )
+          .mb-3
+            label.form-label(for="collectionDescription") Descripción (opcional)
+            textarea.form-control#collectionDescription(
+              rows="2"
+              placeholder="Describe esta colección..."
+              maxlength="255"
+            )
+          input(type="hidden" id="collectionEditId" value="")
+        .modal-footer
+          button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+          button.btn.btn-primary#btnSaveCollection(type="button")
+            i.bi.bi-check-lg.me-1
+            | Guardar
+
+  //- Modal: Confirmar eliminación
+  .modal.fade#deleteCollectionModal(tabindex="-1" aria-labelledby="deleteCollectionModalLabel" aria-hidden="true")
+    .modal-dialog.modal-dialog-centered
+      .modal-content
+        .modal-header.bg-danger.text-white
+          h5.modal-title#deleteCollectionModalLabel Eliminar Colección
+          button.btn-close.btn-close-white(type="button" data-bs-dismiss="modal" aria-label="Close")
+        .modal-body
+          p ¿Estás seguro de que deseas eliminar la colección 
+            strong#deleteCollectionName
+            | ?
+          p.text-muted.small Las publicaciones guardadas en esta colección no se eliminarán, solo pasarán a "Sin colección".
+          input(type="hidden" id="deleteCollectionId" value="")
+        .modal-footer
+          button.btn.btn-secondary(type="button" data-bs-dismiss="modal") Cancelar
+          button.btn.btn-danger#btnConfirmDelete(type="button")
+            i.bi.bi-trash.me-1
+            | Eliminar
 
   script(src="/js/likes.js")
   script(src="/js/bookmarks.js")
+  script(src="/js/collections.js")

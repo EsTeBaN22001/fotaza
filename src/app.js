@@ -16,6 +16,7 @@ const notificationRoutes = require('./routes/notification.routes')
 const searchRoutes = require('./routes/search.routes')
 const imageRoutes = require('./routes/image.routes')
 const messageRoutes = require('./routes/message.routes')
+const collectionRoutes = require('./routes/collection.routes')
 
 const { attachUser } = require('./middlewares/authMiddleware')
 
@@ -45,6 +46,7 @@ app.use('/notifications', notificationRoutes)
 app.use('/search', searchRoutes)
 app.use('/images', imageRoutes)
 app.use('/messages', messageRoutes)
+app.use('/collections', collectionRoutes)
 
 sequelize
   .sync()

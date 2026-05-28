@@ -16,4 +16,6 @@ router.get('/:username/following', authRequired, sanitizeUsername, profileContro
 
 router.post('/:username/follow', authRequired, sanitizeUsername, profileController.toggleFollow)
 
+router.put('/saved/:postId/collection', authRequired, bookmarkController.updateBookmarkCollection)
+
 module.exports = router
