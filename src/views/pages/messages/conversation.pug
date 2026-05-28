@@ -77,19 +77,4 @@ block content
     .chat-container { scroll-behavior: smooth; }
     .message-bubble { word-break: break-word; }
 
-  script.
-    // Scroll to bottom on load
-    const chatContainer = document.getElementById('chatContainer')
-    if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight
-    }
-
-    // Submit with Ctrl+Enter
-    const msgInput = document.getElementById('msgInput')
-    if (msgInput) {
-      msgInput.addEventListener('keydown', function (e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-          this.closest('form').submit()
-        }
-      })
-    }
+  script(src="/js/conversation.js")
