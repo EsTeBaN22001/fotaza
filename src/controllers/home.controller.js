@@ -1,5 +1,6 @@
 const { Post, PostImage, User, Tag, Like, Bookmark, Rating } = require('../models')
 const { Op, literal, fn, col } = require('sequelize')
+const homeService = require('../services/homeService')
 
 /**
  * Algoritmo de home con balance 70/30:
@@ -56,7 +57,7 @@ exports.getHome = async (req, res) => {
 
     // ---- Mezcla intercalada: 2-3 top rated, 1 reciente, repetir ----
     // Para dar sensación de balance y variedad visual
-    const posts = interleavePosts(topRatedPosts, recentPosts)
+    const posts = homeService.interleavePosts(topRatedPosts, recentPosts)
 
     res.render('pages/home', { posts })
   } catch (err) {
@@ -65,28 +66,3 @@ exports.getHome = async (req, res) => {
   }
 }
 
-/**
- * Intercala posts de dos grupos: por cada 2-3 del grupo A, inserta 1 del grupo B.
- * Si no hay suficientes del grupo B, se completa con los del grupo A.
- */
-function interleavePosts(groupA, groupB) {
-  const result = []
-  let iA = 0
-  let iB = 0
-  let cycle = 0 // 0,1 = groupA; 2 = groupB; se repite
-
-  while (iA < groupA.length || iB < groupB.length) {
-    if (cycle < 2 && iA < groupA.length) {
-      result.push(groupA[iA++])
-    } else if (cycle === 2 && iB < groupB.length) {
-      result.push(groupB[iB++])
-    } else if (iA < groupA.length) {
-      result.push(groupA[iA++])
-    } else if (iB < groupB.length) {
-      result.push(groupB[iB++])
-    }
-    cycle = (cycle + 1) % 3
-  }
-
-  return result
-}

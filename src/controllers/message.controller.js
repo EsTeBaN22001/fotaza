@@ -1,6 +1,7 @@
-const { Message, User, Interest, Post, PostImage } = require('../models')
-const { Op, literal } = require('sequelize')
+const { Message, User } = require('../models')
+const { Op } = require('sequelize')
 const notificationService = require('../services/notificationService')
+const messageService = require('../services/messageService')
 
 exports.getInbox = async (req, res) => {
   try {
@@ -71,7 +72,7 @@ exports.getConversation = async (req, res) => {
 
     // Verificar que hay un vínculo de interés entre estos usuarios
     // (uno expresó interés en el post del otro, o viceversa)
-    const hasInterestLink = await checkInterestLink(currentUserId, otherUserId)
+    const hasInterestLink = await messageService.checkInterestLink(currentUserId, otherUserId)
 
     if (!hasInterestLink) {
       return res.status(403).render('pages/error', {
@@ -106,7 +107,7 @@ exports.getConversation = async (req, res) => {
     })
 
     // Obtener los posts relacionados con el interés para contexto
-    const relatedInterests = await getRelatedInterests(currentUserId, otherUserId)
+    const relatedInterests = await messageService.getRelatedInterests(currentUserId, otherUserId)
 
     res.render('pages/messages/conversation', {
       title: `Conversación con ${otherUser.username}`,
@@ -147,7 +148,7 @@ exports.sendMessage = async (req, res) => {
     }
 
     // Verificar vínculo de interés
-    const hasInterestLink = await checkInterestLink(senderId, receiverId)
+    const hasInterestLink = await messageService.checkInterestLink(senderId, receiverId)
     if (!hasInterestLink) {
       return res.redirect(`/messages?error=No+tenés+permiso+para+enviar+mensajes+a+este+usuario`)
     }
@@ -174,52 +175,3 @@ exports.sendMessage = async (req, res) => {
   }
 }
 
-async function checkInterestLink(userAId, userBId) {
-  // Posts de userB donde userA expresó interés
-  const interestAonB = await Interest.findOne({
-    where: { UserId: userAId },
-    include: [
-      {
-        model: Post,
-        where: { UserId: userBId },
-        required: true
-      }
-    ]
-  })
-
-  if (interestAonB) return true
-
-  // Posts de userA donde userB expresó interés
-  const interestBonA = await Interest.findOne({
-    where: { UserId: userBId },
-    include: [
-      {
-        model: Post,
-        where: { UserId: userAId },
-        required: true
-      }
-    ]
-  })
-
-  return !!interestBonA
-}
-
-async function getRelatedInterests(userAId, userBId) {
-  const interests = await Interest.findAll({
-    where: {
-      [Op.or]: [{ UserId: userAId }, { UserId: userBId }]
-    },
-    include: [
-      {
-        model: Post,
-        where: {
-          [Op.or]: [{ UserId: userAId }, { UserId: userBId }]
-        },
-        required: true,
-        include: [{ model: PostImage, as: 'images', limit: 1 }]
-      }
-    ]
-  })
-
-  return interests
-}
