@@ -18,13 +18,15 @@ services:
       - fotaza_network
 
   app:
-    build: .
+    build:
+      context: .
+      target: development
     container_name: fotaza_app
     restart: always
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - DB_HOST=db
       - DB_PORT=3306
       - DB_NAME=fotaza2
@@ -34,7 +36,7 @@ services:
       - APP_URL=http://localhost:3000
     depends_on:
       - db
-    command: npm run dev
+    command: pnpm run dev
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
