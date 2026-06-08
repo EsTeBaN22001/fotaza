@@ -58,9 +58,29 @@ async function getSeedImage(filename, license = 'free', watermarkText = null) {
 async function seed() {
   console.log('🌱 Iniciando seed (MySQL BLOB/LONGBLOB)...\n')
 
-  await sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
-  await sequelize.sync({ force: true })
-  await sequelize.query('SET FOREIGN_KEY_CHECKS = 1')
+  const isProd = process.env.NODE_ENV === 'production'
+  if (isProd) {
+    console.log('⚠️ Detectado entorno de PRODUCCIÓN. Validando base de datos...')
+    
+    // Evitar pisar datos si ya existen usuarios registrados
+    try {
+      const userCount = await User.count()
+      if (userCount > 0) {
+        console.error('❌ La base de datos de producción ya contiene usuarios registrados. Abortando seed para proteger tus datos.')
+        process.exit(1)
+      }
+    } catch (err) {
+      console.log('ℹ️ Las tablas no existen aún. Inicializando esquema...')
+    }
+
+    console.log(' Sincronizando tablas sin forzar (force: false)...')
+    await sequelize.sync({ force: false })
+  } else {
+    console.log('🔄 Entorno de DESARROLLO. Recreando tablas completamente (force: true)...')
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
+    await sequelize.sync({ force: true })
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 1')
+  }
 
   console.log('\n👤 Creando usuarios...')
   const password = await bcrypt.hash('esteban22001', 10)
