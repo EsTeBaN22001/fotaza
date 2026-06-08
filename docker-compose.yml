@@ -11,7 +11,7 @@ services:
       MYSQL_PASSWORD: userpassword
       MYSQL_USER: fotaza_user
     ports:
-      - "3307:3306"
+      - '3307:3306'
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -24,7 +24,7 @@ services:
     container_name: fotaza_app
     restart: always
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=development
       - DB_HOST=db
@@ -49,7 +49,7 @@ services:
     container_name: fotaza_phpmyadmin
     restart: always
     ports:
-      - "8080:80"
+      - '8080:80'
     environment:
       - PMA_ARBITRARY=1
       - PMA_HOST=db

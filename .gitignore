@@ -71,5 +71,7 @@ coverage/
 # ==========================================
 # ✅ NO ignores tu backup SQL principal (ej: backup.sql o init.sql)
 # ✅ Mantén .env.example en el repo
-!.env.example
-.env
+
+
+.agents/
+docs/
