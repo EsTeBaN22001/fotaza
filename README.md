@@ -19,6 +19,7 @@ npm install
 # 3. Configurar variables de entorno
 cp .env.example .env
 # Editar .env con tus credenciales de MySQL local
+# Nota: Crear una base de datos vacía con el nombre 'fotaza2' en tu gestor de bases de datos (phpMyAdmin, MySQL Workbench, etc.)
 
 # 4. Inicializar la base de datos con datos de prueba
 npm run db:init
