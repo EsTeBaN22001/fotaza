@@ -297,7 +297,7 @@ exports.getExplore = async (req, res) => {
       attributes: [
         'id',
         'name',
-        [literal('(SELECT COUNT(*) FROM post_tags pt INNER JOIN posts p ON pt.PostId = p.id WHERE pt.TagId = Tag.id AND p.status = "approved")'), 'postCount']
+        [literal("(SELECT COUNT(*) FROM post_tags pt INNER JOIN posts p ON pt.PostId = p.id WHERE pt.TagId = Tag.id AND p.status = 'approved')"), 'postCount']
       ],
       order: [[literal('postCount'), 'DESC']],
       limit: 10
