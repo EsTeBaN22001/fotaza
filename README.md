@@ -46,26 +46,32 @@ La aplicación estará disponible en: **http://localhost:3000**
 
 ## ⚙️ Configuración del entorno
 
-Copiá el archivo de ejemplo y completá tus credenciales:
+Para que la aplicación funcione localmente, debés configurar las variables de entorno siguiendo estos pasos:
 
-```bash
-cp .env.example .env
-```
+1. **Copiar el archivo de plantilla**:
+   Creá una copia del archivo `.env.example` y renombralo a `.env`:
+   ```bash
+   cp .env.example .env
+   ```
 
-Variables mínimas requeridas para correr localmente:
+2. **Configurar la base de datos (MySQL)**:
+   Abre el archivo `.env` recién creado y edita los valores correspondientes a tu base de datos local:
+   * `DB_HOST`: Cambialo si tu servidor MySQL no está en `localhost`.
+   * `DB_PORT`: Puerto de tu base de datos. Por defecto es `3306` (o `3307` si decidís levantar el entorno con Docker).
+   * `DB_NAME`: El nombre de la base de datos que querés usar (por defecto `fotaza2`).
+   * `DB_USER` y `DB_PASS`: Tu usuario y contraseña de MySQL local.
 
-```env
-PORT=3000
-NODE_ENV=development
-DB_HOST=localhost
-DB_PORT=3306        # 3307 si usás Docker
-DB_NAME=fotaza
-DB_USER=root
-DB_PASS=tu_password
-JWT_SECRET=una_clave_secreta_larga
-```
+3. **Configurar seguridad (JWT)**:
+   * Generá una clave secreta segura para firmar los tokens JWT y asignala a `JWT_SECRET`. Podés usar el siguiente comando en tu terminal para generar una clave aleatoria:
+     ```bash
+     node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+     ```
+   * Modificá `JWT_EXPIRES_IN` si deseás cambiar la duración de la sesión (ej. `7d` para 7 días).
 
-Ver [.env.example](.env.example) para la lista completa de variables.
+4. **Variables de servidor**:
+   * Por defecto, el puerto es el `3000` y la URL `http://localhost:3000`. Podés ajustarlo según tus necesidades.
+
+Ver el archivo [.env.example](file:///c:/laragon/www/fotaza/.env.example) para ver todas las variables disponibles.
 
 ---
 
