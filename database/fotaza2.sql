@@ -241,23 +241,6 @@ CREATE TABLE `tags` (
 -- Estructura de tabla para la tabla `Users`
 --
 
-CREATE TABLE `Users` (
-  `id` int NOT NULL,
-  `username` varchar(255) DEFAULT NULL,
-  `email` varchar(255) DEFAULT NULL,
-  `password` varchar(255) DEFAULT NULL,
-  `role` enum('user','validator') DEFAULT 'user',
-  `active` tinyint(1) DEFAULT '1',
-  `createdAt` datetime NOT NULL,
-  `updatedAt` datetime NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `users`
---
-
 CREATE TABLE `users` (
   `id` int NOT NULL,
   `username` varchar(255) NOT NULL,
@@ -386,12 +369,6 @@ ALTER TABLE `tags`
   ADD KEY `idx_tags_name` (`name`);
 
 --
--- Indices de la tabla `Users`
---
-ALTER TABLE `Users`
-  ADD PRIMARY KEY (`id`);
-
---
 -- Indices de la tabla `users`
 --
 ALTER TABLE `users`
@@ -462,12 +439,6 @@ ALTER TABLE `reports`
 -- AUTO_INCREMENT de la tabla `tags`
 --
 ALTER TABLE `tags`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT de la tabla `Users`
---
-ALTER TABLE `Users`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
